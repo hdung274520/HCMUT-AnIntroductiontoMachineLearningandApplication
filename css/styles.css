@@ -1,0 +1,102 @@
+/* ==========================================================================
+   ML Interactive Studio — Custom Stylesheet (css/styles.css)
+   Quản lý bố cục Dual-pane, thanh cuộn, khối toán KaTeX & trình soạn thảo CodeMirror
+   ========================================================================== */
+
+:root {
+  --left-pane-width: 50%;
+  --editor-height: 54%;
+}
+
+/* Thanh cuộn mảnh, hiện đại */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.45);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.7);
+}
+
+/* Tùy chỉnh CodeMirror 5 lấp đầy khung soạn thảo */
+.CodeMirror {
+  height: 100% !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 13.5px !important;
+  line-height: 1.6 !important;
+  background-color: #0f172a !important;
+  color: #f8fafc !important;
+}
+.CodeMirror-gutters {
+  background-color: #0b1120 !important;
+  border-right: 1px solid #1e293b !important;
+}
+.CodeMirror-linenumber {
+  color: #64748b !important;
+}
+.CodeMirror-activeline-background {
+  background: rgba(51, 65, 85, 0.35) !important;
+}
+
+/* Khối công thức toán học KaTeX chống tràn ngang trên màn hình nhỏ */
+.math-card {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.875rem 1rem;
+  border-radius: 0.75rem;
+  margin: 0.75rem 0;
+}
+.katex-display {
+  margin: 0.35em 0 !important;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 2px;
+}
+
+/* Định dạng văn bản lý thuyết học thuật dễ đọc */
+.theory-prose h3 {
+  font-size: 1.075rem;
+  font-weight: 700;
+  margin-top: 1.4rem;
+  margin-bottom: 0.55rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.theory-prose p {
+  line-height: 1.7;
+  margin-bottom: 0.65rem;
+}
+.theory-prose ul {
+  list-style-type: disc;
+  padding-left: 1.35rem;
+  margin-bottom: 0.75rem;
+}
+.theory-prose li {
+  margin-bottom: 0.35rem;
+  line-height: 1.65;
+}
+
+/* Chia tỷ lệ 2 cột trên màn hình lớn (Desktop >= 1024px) */
+@media (min-width: 1024px) {
+  #leftPane {
+    width: var(--left-pane-width);
+  }
+  #rightPane {
+    width: calc(100% - var(--left-pane-width));
+  }
+}
+
+/* Tôn trọng tùy chọn giảm chuyển động của hệ điều hành */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

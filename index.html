@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="vi" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ML Interactive Lab — Học Lý thuyết, Giải Bài tập & Thực hành Python Machine Learning</title>
+
+  <!-- Fonts: Inter (Văn bản) & JetBrains Mono (Lập trình) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Thư viện hiển thị công thức toán KaTeX & trình soạn thảo CodeMirror 5 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/theme/dracula.min.css" />
+
+  <!-- Tailwind CSS qua CDN & Tệp cấu hình riêng -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="js/config/tailwind-config.js"></script>
+
+  <!-- Stylesheet tùy chỉnh của dự án -->
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body class="h-full bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 font-sans antialiased flex flex-col overflow-hidden select-none lg:select-auto">
+
+  <!-- ==========================================================================
+       HEADER ĐIỀU HƯỚNG CHÍNH
+       ========================================================================== -->
+  <header class="h-14 shrink-0 border-b border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur px-3 sm:px-5 flex items-center justify-between gap-3 z-30">
+    <div class="flex items-center gap-2.5 min-w-0">
+      <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-600 to-violet-600 text-white flex items-center justify-center shadow-sm shrink-0">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.693L5 14.5m14.8.8l1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0112 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+        </svg>
+      </div>
+      <div class="truncate">
+        <div class="flex items-center gap-2">
+          <h1 class="text-sm sm:text-base font-bold tracking-tight text-slate-900 dark:text-white truncate">
+            ML Interactive Studio
+          </h1>
+          <span class="hidden md:inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-950/80 dark:text-indigo-300 border border-indigo-200/70 dark:border-indigo-800/70 whitespace-nowrap">
+            6 Modules • EE3169
+          </span>
+        </div>
+        <p class="text-[11px] text-slate-500 dark:text-slate-400 hidden sm:block truncate">
+          Học lý thuyết • Giải bài tập toán • Thực thi Python (Pyodide WASM) trực tiếp trên trình duyệt
+        </p>
+      </div>
+    </div>
+
+    <!-- Thanh chuyển nhanh 6 Module trên Desktop -->
+    <nav id="desktopModuleNav" aria-label="Chọn học phần" class="hidden xl:flex items-center gap-1 bg-slate-100 dark:bg-slate-800/90 p-1 rounded-xl border border-slate-200/80 dark:border-slate-700/70">
+    </nav>
+
+    <!-- Huy hiệu trạng thái Pyodide & Chuyển chế độ Sáng/Tối -->
+    <div class="flex items-center gap-2 shrink-0">
+      <div id="pyodideStatusBadge" role="status" aria-live="polite"
+           class="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/70 transition-colors">
+        <span id="pyodideStatusDot" class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+        <span id="pyodideStatusText" class="whitespace-nowrap">Đang khởi tạo Python...</span>
+      </div>
+
+      <button id="themeToggleBtn" type="button" aria-label="Chuyển đổi chế độ Sáng và Tối" title="Chuyển đổi giao diện Sáng / Tối"
+              class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <svg id="moonIcon" class="w-4 h-4 block dark:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.003 9.003 0 009.002-5.998z" />
+        </svg>
+        <svg id="sunIcon" class="w-4 h-4 hidden dark:block text-amber-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Thanh chuyển đổi nhanh trên Mobile (< 1024px) -->
+  <div class="lg:hidden shrink-0 grid grid-cols-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-900 p-1 gap-1">
+    <button id="mobileTabTheory" type="button"
+            class="py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 bg-white dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 shadow-sm cursor-pointer">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
+      </svg>
+      Lý thuyết & Bài tập
+    </button>
+    <button id="mobileTabCode" type="button"
+            class="py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+      </svg>
+      Thực hành Code Python
+    </button>
+  </div>
+
+  <!-- ==========================================================================
+       KHÔNG GIAN LÀM VIỆC 2 CỘT (DUAL-PANE LAYOUT)
+       ========================================================================== -->
+  <main id="workspaceContainer" class="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden relative">
+
+    <!-- CỘT TRÁI: LÝ THUYẾT, CÔNG THỨC TOÁN & BÀI TẬP MẪU -->
+    <section id="leftPane" aria-label="Khu vực Lý thuyết và Bài tập"
+             class="w-full h-full flex flex-col min-h-0 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 select-text">
+      <div class="shrink-0 p-3.5 sm:p-4 border-b border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/90 space-y-3">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-2 justify-between">
+          <label for="moduleSelect" class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-indigo-600 dark:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+            Chọn Module Học tập:
+          </label>
+          <div class="flex items-center gap-1.5">
+            <button id="prevModuleBtn" type="button" title="Module trước" aria-label="Chuyển sang Module trước"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition">
+              ← Trước
+            </button>
+            <button id="nextModuleBtn" type="button" title="Module tiếp theo" aria-label="Chuyển sang Module tiếp theo"
+                    class="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-medium hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition">
+              Tiếp →
+            </button>
+          </div>
+        </div>
+
+        <select id="moduleSelect"
+                class="w-full rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3.5 py-2.5 text-sm font-semibold text-slate-900 dark:text-white shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 cursor-pointer">
+        </select>
+
+        <div class="grid grid-cols-3 gap-1 bg-slate-200/75 dark:bg-slate-800 p-1 rounded-xl" role="tablist" aria-label="Nội dung bài học">
+          <button type="button" role="tab" data-subtab="theory" aria-selected="true"
+                  class="subtab-btn py-1.5 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer bg-white dark:bg-slate-900 text-indigo-700 dark:text-indigo-300 shadow-sm">
+            Lý thuyết & Công thức
+          </button>
+          <button type="button" role="tab" data-subtab="exercises" aria-selected="false"
+                  class="subtab-btn py-1.5 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            Bài tập mẫu (Chi tiết)
+          </button>
+          <button type="button" role="tab" data-subtab="quiz" aria-selected="false"
+                  class="subtab-btn py-1.5 px-2.5 rounded-lg text-xs font-semibold transition cursor-pointer text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            Trắc nghiệm nhanh
+          </button>
+        </div>
+      </div>
+
+      <div id="leftContentScroll" class="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
+        <div id="moduleHeroCard" class="rounded-2xl p-4 sm:p-5 bg-gradient-to-br from-indigo-50 via-white to-violet-50 dark:from-indigo-950/50 dark:via-slate-900 dark:to-violet-950/30 border border-indigo-200/80 dark:border-indigo-800/60 shadow-sm">
+        </div>
+        <div id="leftDynamicBody" class="theory-prose text-sm text-slate-700 dark:text-slate-300 pb-8">
+        </div>
+      </div>
+    </section>
+
+    <!-- Thanh kéo chia đôi cột trên Desktop -->
+    <div id="paneResizer" role="separator" aria-orientation="vertical" tabindex="0"
+         aria-label="Kéo hoặc nhấn phím mũi tên Trái Phải để điều chỉnh độ rộng hai cột"
+         title="Kéo để thay đổi kích thước (Nhấp đúp để đặt lại 50/50)"
+         class="hidden lg:flex w-2 shrink-0 bg-slate-200/80 dark:bg-slate-800 hover:bg-indigo-500 dark:hover:bg-indigo-500 active:bg-indigo-600 cursor-col-resize items-center justify-center transition-colors group focus:outline-none focus:bg-indigo-500">
+      <div class="w-0.5 h-8 bg-slate-400 dark:bg-slate-600 group-hover:bg-white rounded-full"></div>
+    </div>
+
+    <!-- CỘT PHẢI: TRÌNH BIÊN TẬP CODE PYTHON & MÀN HÌNH OUTPUT -->
+    <section id="rightPane" aria-label="Khu vực Thực hành Code Python"
+             class="hidden lg:flex w-full h-full flex-col min-h-0 bg-slate-950 text-slate-100">
+      <div class="shrink-0 px-3.5 py-2.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex items-center gap-2 min-w-0 flex-1">
+          <span class="inline-flex items-center justify-center w-6 h-6 rounded-md bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 shrink-0" aria-hidden="true">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.25 9.75L16.5 12l-2.25 2.25m-4.5 0L7.5 12l2.25-2.25M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z" />
+            </svg>
+          </span>
+          <label for="labTemplateSelect" class="sr-only">Chọn bài thực hành code mẫu</label>
+          <select id="labTemplateSelect"
+                  class="min-w-0 flex-1 max-w-md rounded-lg bg-slate-800 border border-slate-700 px-2.5 py-1.5 text-xs font-medium text-slate-100 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer truncate">
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2 shrink-0">
+          <button id="loadSampleBtn" type="button" title="Khôi phục code mẫu chuẩn của bài đang chọn"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <svg class="w-3.5 h-3.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+            Nạp code mẫu
+          </button>
+
+          <button id="runCodeBtn" type="button" title="Thực thi code Python (Phím tắt: Ctrl + Enter)"
+                  class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 shadow-sm shadow-emerald-950/50 transition cursor-pointer disabled:opacity-60 disabled:cursor-wait focus:outline-none focus:ring-2 focus:ring-emerald-400">
+            <svg id="runIconPlay" class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+            </svg>
+            <svg id="runIconSpinner" class="hidden w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-90" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span id="runBtnLabel">Chạy Code</span>
+            <kbd class="hidden sm:inline-block ml-1 px-1.5 py-0.2 text-[10px] font-mono bg-emerald-700/40 text-slate-950 rounded">Ctrl+↵</kbd>
+          </button>
+        </div>
+      </div>
+
+      <div id="editorContainer" style="height: var(--editor-height);" class="relative min-h-[160px] border-b border-slate-800 overflow-hidden">
+        <label for="codeEditorTextarea" class="sr-only">Trình biên tập mã nguồn Python</label>
+        <textarea id="codeEditorTextarea" spellcheck="false"
+                  class="w-full h-full bg-slate-950 text-slate-100 font-mono text-sm p-4 focus:outline-none resize-none"></textarea>
+      </div>
+
+      <div id="verticalResizer" role="separator" aria-orientation="horizontal" tabindex="0"
+           aria-label="Kéo để điều chỉnh chiều cao khung Code và khung Output"
+           class="h-1.5 shrink-0 bg-slate-800 hover:bg-indigo-500 cursor-row-resize transition-colors flex items-center justify-center">
+        <div class="w-8 h-0.5 bg-slate-600 rounded-full"></div>
+      </div>
+
+      <div id="outputContainer" class="flex-1 min-h-[150px] flex flex-col bg-slate-950 overflow-hidden select-text">
+        <div class="shrink-0 px-3.5 py-2 bg-slate-900/90 border-b border-slate-800 flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 7.5l3 2.25-3 2.25m4.5 0h3m-9 8.25h13.5A2.25 2.25 0 0021 18V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v12a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              Output (Console & Matplotlib)
+            </span>
+            <span id="execTimeBadge" class="hidden px-2 py-0.5 rounded text-[11px] font-mono bg-slate-800 text-emerald-400 border border-slate-700"></span>
+            <span id="plotCountBadge" class="hidden px-2 py-0.5 rounded text-[11px] font-medium bg-indigo-950 text-indigo-300 border border-indigo-800"></span>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button id="toggleOutputExpandBtn" type="button" title="Mở rộng hoặc thu gọn màn hình kết quả"
+                    class="px-2 py-1 rounded text-[11px] font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer">
+              Phóng to Output
+            </button>
+            <button id="clearOutputBtn" type="button" title="Xóa màn hình kết quả"
+                    class="px-2 py-1 rounded text-[11px] font-medium text-slate-400 hover:text-rose-300 hover:bg-slate-800 transition cursor-pointer">
+              Xóa
+            </button>
+          </div>
+        </div>
+
+        <div id="outputScrollArea" class="flex-1 overflow-y-auto p-3.5 space-y-4">
+          <div id="outputPlaceholder" class="rounded-xl border border-dashed border-slate-800 bg-slate-900/40 p-4 text-xs text-slate-400 flex items-start gap-3">
+            <svg class="w-5 h-5 text-indigo-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div class="space-y-1">
+              <p class="font-semibold text-slate-200">Môi trường thực thi Python trực tiếp trên trình duyệt (Pyodide WebAssembly)</p>
+              <p>Nhấn nút <strong class="text-emerald-400">Chạy Code</strong> (hoặc tổ hợp phím <code class="px-1 py-0.5 rounded bg-slate-800 text-slate-200">Ctrl + Enter</code>) để chạy thực tế NumPy, Pandas, Scikit-Learn và vẽ biểu đồ Matplotlib ngay tại đây mà không cần cài đặt Python trên máy.</p>
+            </div>
+          </div>
+
+          <pre id="consoleStdout" class="hidden font-mono text-xs sm:text-[13px] leading-relaxed text-slate-200 bg-slate-900/80 border border-slate-800 rounded-xl p-3.5 whitespace-pre-wrap break-words"></pre>
+          <pre id="consoleStderr" class="hidden font-mono text-xs leading-relaxed text-rose-300 bg-rose-950/40 border border-rose-800/70 rounded-xl p-3.5 whitespace-pre-wrap break-words"></pre>
+          <div id="matplotlibGallery" class="hidden space-y-3"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal phóng to biểu đồ Matplotlib -->
+  <div id="imageModal" role="dialog" aria-modal="true" aria-label="Xem biểu đồ kích thước lớn"
+       class="fixed inset-0 z-50 hidden bg-slate-950/85 backdrop-blur-sm p-4 sm:p-8 flex items-center justify-center">
+    <div class="relative max-w-5xl w-full bg-white dark:bg-slate-900 rounded-2xl p-3 sm:p-4 shadow-2xl border border-slate-200 dark:border-slate-700">
+      <div class="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-200 dark:border-slate-800">
+        <span class="text-xs font-semibold text-slate-600 dark:text-slate-300">Biểu đồ trực quan Matplotlib (Độ phân giải cao)</span>
+        <button id="closeModalBtn" type="button"
+                class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-rose-100 hover:text-rose-700 cursor-pointer">
+          Đóng (Esc)
+        </button>
+      </div>
+      <div class="max-h-[80vh] overflow-auto flex justify-center bg-white rounded-xl p-2">
+        <img id="modalImage" src="" alt="Biểu đồ kết quả Machine Learning" class="max-w-full h-auto object-contain" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast thông báo -->
+  <div id="toastNotification" aria-live="polite"
+       class="fixed bottom-4 right-4 z-50 pointer-events-none opacity-0 translate-y-2 transition-all duration-200 px-3.5 py-2 rounded-xl bg-slate-900 dark:bg-indigo-600 text-white text-xs font-medium shadow-lg border border-slate-700/60">
+  </div>
+
+  <!-- ==========================================================================
+       1. THƯ VIỆN NGOÀI (KaTeX, CodeMirror 5, Pyodide WASM)
+       ========================================================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/lib/codemirror.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/edit/matchbrackets.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/codemirror@5.65.18/addon/selection/active-line.min.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.4/full/pyodide.js"></script>
+
+  <!-- ==========================================================================
+       2. DỮ LIỆU HỌC TẬP 6 MODULE (Tách riêng từng tệp để dễ bảo trì & mở rộng)
+       ========================================================================== -->
+  <script src="js/data/module1-math.js"></script>
+  <script src="js/data/module2-linear.js"></script>
+  <script src="js/data/module3-prob-svm.js"></script>
+  <script src="js/data/module4-nn-dl.js"></script>
+  <script src="js/data/module5-unsupervised.js"></script>
+  <script src="js/data/module6-advanced.js"></script>
+
+  <!-- ==========================================================================
+       3. LÕI HỆ THỐNG & GIAO DIỆN ĐIỀU KHIỂN
+       ========================================================================== -->
+  <script src="js/core/editor.js"></script>
+  <script src="js/core/pyodide-runner.js"></script>
+  <script src="js/ui/resizer.js"></script>
+  <script src="js/ui/app.js"></script>
+</body>
+</html>
