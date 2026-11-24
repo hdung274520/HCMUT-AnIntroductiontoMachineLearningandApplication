@@ -1,12 +1,12 @@
 /**
  * Bộ điều khiển Thanh kéo chia đôi khung nhìn (js/ui/resizer.js)
- * Hỗ trợ kéo chuột, nhấp đúp đặt lại 50/50 và điều hướng bàn phím cho khả năng tiếp cận.
+ * Hỗ trợ kéo chuột, nhấp đúp đặt lại 50/50 và điều hướng bàn phím cho chế độ Song song.
  */
 window.SplitResizer = (function () {
   function init(onResizeCallback) {
     const workspace = document.getElementById('workspaceContainer');
     const hResizer = document.getElementById('paneResizer');
-    const rightPane = document.getElementById('rightPane');
+    const rightPane = document.getElementById('playgroundPane');
     const vResizer = document.getElementById('verticalResizer');
 
     if (!workspace || !hResizer || !rightPane || !vResizer) return;

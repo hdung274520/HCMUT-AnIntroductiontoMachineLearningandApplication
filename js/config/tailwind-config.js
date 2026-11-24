@@ -1,22 +1,22 @@
 /**
  * Cấu hình Tailwind CSS CDN (js/config/tailwind-config.js)
- * Tích hợp chế độ Dark Mode theo class và bộ font học thuật + lập trình.
+ * Tối ưu cho giao diện kỹ thuật Dark-first (Emerald + Deep Slate) & hỗ trợ Light Mode.
  */
 tailwind.config = {
   darkMode: 'class',
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        sans: ['IBM Plex Sans', 'Inter', 'system-ui', '-apple-system', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
       },
       colors: {
-        brand: {
-          50: '#eef2ff',
-          100: '#e0e7ff',
-          500: '#6366f1',
-          600: '#4f46e5',
-          700: '#4338ca'
+        surface: {
+          950: '#0a0f14',
+          900: '#0e141b',
+          850: '#131b24',
+          800: '#18222d',
+          700: '#243242'
         }
       }
     }

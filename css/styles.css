@@ -1,14 +1,15 @@
 /* ==========================================================================
    ML Interactive Studio — Custom Stylesheet (css/styles.css)
-   Quản lý bố cục Dual-pane, thanh cuộn, khối toán KaTeX & trình soạn thảo CodeMirror
+   Phong cách tối giản kỹ thuật: Dark Slate + Emerald Accent, tối ưu đọc công thức
+   và lập trình Python trực tiếp trên trình duyệt.
    ========================================================================== */
 
 :root {
   --left-pane-width: 50%;
-  --editor-height: 54%;
+  --editor-height: 55%;
 }
 
-/* Thanh cuộn mảnh, hiện đại */
+/* Thanh cuộn mảnh, đồng bộ cả Dark và Light mode */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
@@ -17,40 +18,40 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(148, 163, 184, 0.45);
+  background: rgba(148, 163, 184, 0.28);
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(100, 116, 139, 0.7);
+  background: rgba(148, 163, 184, 0.5);
 }
 
-/* Tùy chỉnh CodeMirror 5 lấp đầy khung soạn thảo */
+/* Tùy chỉnh CodeMirror 5 khớp bảng màu Dark Slate */
 .CodeMirror {
   height: 100% !important;
   font-family: 'JetBrains Mono', monospace !important;
   font-size: 13.5px !important;
-  line-height: 1.6 !important;
-  background-color: #0f172a !important;
-  color: #f8fafc !important;
+  line-height: 1.65 !important;
+  background-color: #0b1016 !important;
+  color: #e2e8f0 !important;
 }
 .CodeMirror-gutters {
-  background-color: #0b1120 !important;
+  background-color: #080c11 !important;
   border-right: 1px solid #1e293b !important;
 }
 .CodeMirror-linenumber {
-  color: #64748b !important;
+  color: #475569 !important;
 }
 .CodeMirror-activeline-background {
-  background: rgba(51, 65, 85, 0.35) !important;
+  background: rgba(16, 185, 129, 0.06) !important;
 }
 
-/* Khối công thức toán học KaTeX chống tràn ngang trên màn hình nhỏ */
+/* Khối công thức toán học KaTeX chống tràn ngang */
 .math-card {
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 0.875rem 1rem;
+  padding: 0.95rem 1.15rem;
   border-radius: 0.75rem;
-  margin: 0.75rem 0;
+  margin: 0.85rem 0;
 }
 .katex-display {
   margin: 0.35em 0 !important;
@@ -59,41 +60,94 @@
   padding-bottom: 2px;
 }
 
-/* Định dạng văn bản lý thuyết học thuật dễ đọc */
+/* Kiểu chữ học thuật & code inline giống tài liệu kỹ thuật */
 .theory-prose h3 {
-  font-size: 1.075rem;
+  font-size: 1.15rem;
   font-weight: 700;
-  margin-top: 1.4rem;
-  margin-bottom: 0.55rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-.theory-prose p {
-  line-height: 1.7;
+  letter-spacing: -0.01em;
+  margin-top: 1.75rem;
   margin-bottom: 0.65rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+  color: #0f172a;
+}
+.dark .theory-prose h3 {
+  color: #f1f5f9;
+  border-bottom-color: #1e293b;
+}
+
+.theory-prose p {
+  line-height: 1.75;
+  margin-bottom: 0.75rem;
 }
 .theory-prose ul {
   list-style-type: disc;
-  padding-left: 1.35rem;
-  margin-bottom: 0.75rem;
+  padding-left: 1.4rem;
+  margin-bottom: 0.85rem;
 }
 .theory-prose li {
-  margin-bottom: 0.35rem;
-  line-height: 1.65;
+  margin-bottom: 0.45rem;
+  line-height: 1.7;
 }
 
-/* Chia tỷ lệ 2 cột trên màn hình lớn (Desktop >= 1024px) */
+/* Inline code pill (ví dụ: ReLU, Adam, stdint style) */
+.theory-prose code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.84em;
+  padding: 0.15rem 0.42rem;
+  border-radius: 0.375rem;
+  background-color: #e2e8f0;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+.dark .theory-prose code {
+  background-color: #18222d;
+  color: #e2e8f0;
+  border-color: #293646;
+}
+
+/* Bảng dữ liệu học thuật gọn gàng */
+.theory-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid #cbd5e1;
+}
+.dark .theory-prose table {
+  border-color: #1e293b;
+}
+.theory-prose th,
+.theory-prose td {
+  padding: 0.65rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.dark .theory-prose th,
+.dark .theory-prose td {
+  border-bottom-color: #1e293b;
+}
+.theory-prose th {
+  font-weight: 600;
+  background-color: #f1f5f9;
+}
+.dark .theory-prose th {
+  background-color: #131b24;
+  color: #e2e8f0;
+}
+
+/* Chia tỷ lệ 2 cột trong chế độ Song song (Dual-Pane) */
 @media (min-width: 1024px) {
-  #leftPane {
+  .split-active #theoryPane {
     width: var(--left-pane-width);
   }
-  #rightPane {
+  .split-active #playgroundPane {
     width: calc(100% - var(--left-pane-width));
   }
 }
 
-/* Tôn trọng tùy chọn giảm chuyển động của hệ điều hành */
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.01ms !important;
