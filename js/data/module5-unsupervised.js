@@ -24,7 +24,9 @@ window.COURSE_MODULES.push(
             $$J_{\text{WCSS}} = \sum_{i=1}^N \sum_{k=1}^K r_{ik} \|x_i - \mu_k\|_2^2, \qquad r_{ik} = \begin{cases}1 & \text{nếu } k = \arg\min_j \|x_i - \mu_j\|_2^2 \\ 0 & \text{ngược lại}\end{cases}$$
           </div>
           <ul>
-            <li><strong>Hai bước lặp:</strong> (1) Cố định $\mu_k$, gán mỗi điểm vào tâm cụm gần nhất; (2) Cố định nhãn $r_{ik}$, cập nhật $\mu_k$ bằng trung bình cộng các điểm trong cụm.</li>
+            <li><strong>Hai bước lặp:</strong> (1) <em>Assignment:</em> Cố định $\mu_k$, gán mỗi điểm vào tâm cụm gần nhất theo $r_{ik}$; (2) <em>Update:</em> Cập nhật lại tâm cụm bằng trung bình cộng các điểm thuộc cụm $C_k$:
+              $$\mu_k = \frac{1}{|C_k|} \sum_{x \in C_k} x$$
+            </li>
             <li><strong>K-Means++:</strong> Khởi tạo tâm cụm tuần tự với xác suất chọn tâm mới tỷ lệ thuận với bình phương khoảng cách ngắn nhất tới các tâm đã chọn $D(x)^2$, giúp hội tụ nhanh và tránh rơi vào cực tiểu cục bộ kém.</li>
             <li><strong>Chọn số cụm $K$ tối ưu:</strong>
               <ul>
@@ -34,27 +36,46 @@ window.COURSE_MODULES.push(
                 </li>
               </ul>
             </li>
-            <li><strong>Gaussian Mixture Model (GMM) & Thuật toán EM:</strong> Khắc phục nhược điểm cụm hình cầu cứng nhắc của K-Means bằng cách mô hình hóa mật độ dữ liệu như tổ hợp $K$ phân phối chuẩn đa chiều $p(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x \mid \mu_k, \Sigma_k)$. Tối ưu bằng <strong>Expectation-Maximization (EM)</strong>:
+            <li><strong>Gaussian Mixture Model (GMM) &amp; Thuật toán EM:</strong> Mô hình hóa mật độ dữ liệu như tổ hợp $K$ phân phối chuẩn đa chiều:
+              $$P(x) = \sum_{k=1}^K \pi_k \mathcal{N}(x \mid \mu_k, \Sigma_k), \qquad \mathcal{N}(x \mid \mu_k, \Sigma_k) = \frac{1}{(2\pi)^{d/2}|\Sigma_k|^{1/2}} \exp\left(-\frac{1}{2}(x-\mu_k)^T \Sigma_k^{-1}(x-\mu_k)\right)$$
+              Tối ưu hàm Log-Likelihood $\ln P(X \mid \pi, \mu, \Sigma) = \sum_{i=1}^N \ln \left(\sum_{k=1}^K \pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)\right)$ bằng <strong>Expectation-Maximization (EM)</strong>:
               <ul>
-                <li><strong>E-step:</strong> Tính xác suất gán cụm mềm (responsibility) $\gamma_{ik} = \frac{\pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(x_i \mid \mu_j, \Sigma_j)}$.</li>
-                <li><strong>M-step:</strong> Cập nhật lại $\mu_k, \Sigma_k, \pi_k$ theo trung bình có trọng số $\gamma_{ik}$.</li>
+                <li><strong>E-step (Trách nhiệm cụm):</strong> $\gamma_{ik} = \frac{\pi_k \mathcal{N}(x_i \mid \mu_k, \Sigma_k)}{\sum_{j=1}^K \pi_j \mathcal{N}(x_i \mid \mu_j, \Sigma_j)}$.</li>
+                <li><strong>M-step (Cập nhật tham số có trọng số $\gamma_{ik}$, đặt $N_k = \sum_{i=1}^N \gamma_{ik}$):</strong>
+                  $$\mu_k^{\text{new}} = \frac{1}{N_k}\sum_{i=1}^N \gamma_{ik} x_i, \qquad \Sigma_k^{\text{new}} = \frac{1}{N_k}\sum_{i=1}^N \gamma_{ik}(x_i - \mu_k^{\text{new}})(x_i - \mu_k^{\text{new}})^T, \qquad \pi_k^{\text{new}} = \frac{N_k}{N}$$
+                </li>
               </ul>
             </li>
           </ul>
 
-          <h3>2. Giảm chiều Dữ liệu: Truncated SVD, PCA & LDA</h3>
+          <h3>2. Giảm chiều Dữ liệu: Truncated SVD, PCA &amp; LDA</h3>
           <ul>
-            <li><strong>PCA (Principal Component Analysis — Không giám sát):</strong> Chiếu dữ liệu đã quy tâm $\tilde{X} \in \mathbb{R}^{N \times d}$ xuống không gian con $k$ chiều ($k \ll d$) qua ma trận trực giao $W_k = [v_1, \dots, v_k] \in \mathbb{R}^{d \times k}$ sao cho <strong>phương sai dữ liệu sau khi chiếu đạt cực đại</strong>. Nghiệm chính là $k$ vector riêng ứng với $k$ trị riêng lớn nhất $\lambda_1 \ge \dots \ge \lambda_k$ của ma trận hiệp phương sai $S = \frac{1}{N}\tilde{X}^T \tilde{X}$. Tỷ lệ phương sai giữ lại:</li>
+            <li><strong>PCA (Principal Component Analysis — Không giám sát):</strong> Chiếu dữ liệu đã quy tâm $\tilde{X} \in \mathbb{R}^{N \times d}$ xuống không gian con $k$ chiều ($k \ll d$) qua ma trận trực chuẩn $W_k = [v_1, \dots, v_k] \in \mathbb{R}^{d \times k}$ sao cho <strong>phương sai sau khi chiếu đạt cực đại</strong> (tương đương sai số tái tạo nhỏ nhất). Giải phương trình trị riêng của ma trận hiệp phương sai $\Sigma = \frac{1}{N}\tilde{X}^T \tilde{X}$:
+              $$\Sigma v_i = \lambda_i v_i \quad (\lambda_1 \ge \lambda_2 \ge \dots \ge \lambda_d \ge 0)$$
+            </li>
           </ul>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
-            $$\text{Explained Variance Ratio}(k) = \frac{\sum_{j=1}^k \lambda_j}{\sum_{j=1}^d \lambda_j}, \qquad Z = \tilde{X} W_k \in \mathbb{R}^{N \times k}$$
+            $$\text{Explained Variance Ratio}(k) = \frac{\sum_{j=1}^k \lambda_j}{\sum_{j=1}^d \lambda_j}, \qquad Z = \tilde{X} W_k \in \mathbb{R}^{N \times k}, \qquad \hat{X} = Z W_k^T + \mathbf{1}\mu^T$$
           </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Sai số tái tạo trung bình khi giữ $k$ thành phần chính bằng đúng tổng các trị riêng bị loại bỏ: $\frac{1}{N}\|X - \hat{X}\|_F^2 = \sum_{j=k+1}^d \lambda_j$.
+          </p>
           <ul>
             <li><strong>Truncated SVD:</strong> Áp dụng trực tiếp $X \approx U_k \Sigma_k V_k^T$ mà <em>không cần quy tâm trừ trung bình</em> — đặc biệt hữu hiệu cho ma trận thưa kích thước lớn (như TF-IDF văn bản hoặc ma trận User-Item) vì giữ nguyên cấu trúc thưa.</li>
-            <li><strong>LDA (Linear Discriminant Analysis — Có giám sát):</strong> Tận dụng nhãn lớp để tìm phép chiếu cực đại hóa <strong>Tiêu chuẩn Fisher</strong> — kéo tâm các lớp xa nhau tối đa đồng thời gom chặt phương sai trong từng lớp:</li>
+            <li><strong>LDA (Linear Discriminant Analysis — Có giám sát):</strong> Tận dụng nhãn lớp để tìm phép chiếu cực đại hóa <strong>Tiêu chuẩn Fisher</strong> dựa trên ma trận phân tán trong lớp $S_W$ và giữa các lớp $S_B$:
+              $$S_W = \sum_{c=1}^C \sum_{x \in \mathcal{D}_c} (x - \mu_c)(x - \mu_c)^T, \qquad S_B = \sum_{c=1}^C N_c (\mu_c - \mu)(\mu_c - \mu)^T$$
+            </li>
           </ul>
           <div class="math-card bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
             $$J(W) = \frac{|W^T S_B W|}{|W^T S_W W|} \implies S_W^{-1} S_B v = \lambda v \quad (\text{số chiều tối đa sau giảm là } \min(d, C - 1))$$
+          </div>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Mô phỏng K-Means &amp; WCSS:</strong> Cho $4$–$6$ điểm 2D và tâm cụm ban đầu $\mu_1, \mu_2$, tính khoảng cách Euclid, gán cụm, cập nhật tâm mới và tính WCSS.</li>
+              <li><strong>Dạng 2 — PCA 2D từ Ma trận Hiệp phương sai:</strong> Cho $\Sigma$ cỡ $2\times 2$, giải $\det(\Sigma - \lambda I) = 0$ tìm $\lambda_1, \lambda_2$, vector riêng $v_1$ và tỷ lệ phương sai giữ lại.</li>
+              <li><strong>Dạng 3 — E-step trong GMM:</strong> Cho tham số $(\pi_k, \mu_k, \sigma_k^2)$ của $2$ cụm Gaussian, tính trách nhiệm gán cụm mềm $\gamma_{ik}$ cho một điểm $x_i$.</li>
+            </ul>
           </div>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-5"></div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
@@ -134,6 +155,42 @@ if v1[0] < 0:
 print("Các trị riêng (λ1, λ2):", eigvals)
 print("Thành phần chính thứ nhất v1 (±):", np.round(v1, 4))
 print(f"Tỷ lệ phương sai giữ lại (k=1): {eigvals[0]/eigvals.sum()*100:.2f}%")`
+          },
+          {
+            title: 'Bài tập 5.3: Tính Trách nhiệm cụm (E-step) trong Gaussian Mixture Model 1D',
+            problemHtml: String.raw`
+              Cho mô hình GMM $1$ chiều gồm $K = 2$ thành phần với trọng số tiên nghiệm bằng nhau $\pi_1 = \pi_2 = 0.5$:
+              <ul class="mt-1">
+                <li>Thành phần 1: $\mathcal{N}(\mu_1 = 2, \sigma_1^2 = 1)$</li>
+                <li>Thành phần 2: $\mathcal{N}(\mu_2 = 5, \sigma_2^2 = 1)$</li>
+              </ul>
+              Thực hiện bước <strong>E-step</strong> để tính xác suất trách nhiệm $\gamma_{1}, \gamma_{2}$ cho điểm dữ liệu $x = 3$.
+            `,
+            solutionHtml: String.raw`
+              <p><strong>Bước 1 — Tính mật độ chuẩn 1D tại $x = 3$:</strong></p>
+              $$\mathcal{N}(3 \mid 2, 1) = \frac{1}{\sqrt{2\pi}}e^{-\frac{(3-2)^2}{2}} = \frac{e^{-0.5}}{\sqrt{2\pi}} \approx 0.24197$$
+              $$\mathcal{N}(3 \mid 5, 1) = \frac{1}{\sqrt{2\pi}}e^{-\frac{(3-5)^2}{2}} = \frac{e^{-2.0}}{\sqrt{2\pi}} \approx 0.05399$$
+              <p><strong>Bước 2 — Tính xác suất trách nhiệm (Responsibilities):</strong> (Do $\pi_1 = \pi_2 = 0.5$ nên triệt tiêu)</p>
+              $$\gamma_1 = \frac{0.5 \times 0.24197}{0.5 \times 0.24197 + 0.5 \times 0.05399} = \frac{e^{-0.5}}{e^{-0.5} + e^{-2.0}} = \frac{1}{1 + e^{-1.5}} \approx \mathbf{0.8176} \; (81.76\%)$$
+              $$\gamma_2 = 1 - \gamma_1 \approx \mathbf{0.1824} \; (18.24\%)$$
+              <p>Khác với K-Means gán cứng $x=3$ hoàn toàn về Cụm 1, GMM gán mềm theo tỷ lệ $81.76\%$ Cụm 1 và $18.24\%$ Cụm 2.</p>
+            `,
+            verifyCode: String.raw`import math
+
+def norm_pdf(x, mu, var):
+    return (1.0 / math.sqrt(2.0 * math.pi * var)) * math.exp(-((x - mu) ** 2) / (2.0 * var))
+
+x = 3.0
+pi1, mu1, var1 = 0.5, 2.0, 1.0
+pi2, mu2, var2 = 0.5, 5.0, 1.0
+
+w1 = pi1 * norm_pdf(x, mu1, var1)
+w2 = pi2 * norm_pdf(x, mu2, var2)
+gamma1 = w1 / (w1 + w2)
+gamma2 = w2 / (w1 + w2)
+
+print(f"N(3 | 2, 1) = {norm_pdf(x, mu1, var1):.5f}, N(3 | 5, 1) = {norm_pdf(x, mu2, var2):.5f}")
+print(f"Trách nhiệm cụm (E-step): gamma_1 = {gamma1:.4f} ({gamma1*100:.2f}%), gamma_2 = {gamma2:.4f} ({gamma2*100:.2f}%)")`
           }
         ],
         quiz: [

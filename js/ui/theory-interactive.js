@@ -2215,9 +2215,11 @@ window.TheoryInteractive = (function () {
   }
 
   // ==========================================================================
-  // MODULE 6: THÍ NGHIỆM ĐÁNH ĐỔI BIAS – VARIANCE (HỒI QUY ĐA THỨC)
+  // MODULE 6: BIAS–VARIANCE TRADE-OFF & CONFUSION MATRIX / ROC-AUC
   // ==========================================================================
   function buildModule6(mountEl) {
+    let activeTab = 'bv';
+
     const trueFn = (x) => Math.sin(1.5 * Math.PI * x);
     let degree = 3;
     let noiseStd = 0.25;
@@ -2225,6 +2227,21 @@ window.TheoryInteractive = (function () {
     let ridgeLam = 0.0;
     let trainSet = [];
     let ghostCurves = [];
+
+    // ROC / Confusion Matrix state
+    let tau = 0.50;
+    let sepDelta = 1.6;
+    const rocSamples = (() => {
+      let seed = 2026;
+      const randN = () => {
+        const next = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return Math.max(1e-6, seed / 4294967296); };
+        return Math.sqrt(-2 * Math.log(next())) * Math.cos(2 * Math.PI * next());
+      };
+      const arr = [];
+      for (let i = 0; i < 100; i++) arr.push({ y: 0, z: randN() });
+      for (let i = 0; i < 100; i++) arr.push({ y: 1, z: randN() });
+      return arr;
+    })();
 
     function randNorm() {
       const u1 = Math.max(1e-7, Math.random());
@@ -2249,7 +2266,7 @@ window.TheoryInteractive = (function () {
       const A = Array.from({ length: m }, () => new Float64Array(m + 1));
 
       for (let i = 0; i < n; i++) {
-        const u = 2 * pts[i].x - 1; // scale x in [0,1] -> u in [-1,1] for numerical stability
+        const u = 2 * pts[i].x - 1;
         const row = new Float64Array(m);
         row[0] = 1;
         for (let j = 1; j < m; j++) row[j] = row[j - 1] * u;
@@ -2294,53 +2311,94 @@ window.TheoryInteractive = (function () {
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
           <div>
             <span class="text-[10px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400">Mô phỏng Tương tác • Module 06</span>
-            <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white m-0">Thí nghiệm Đánh đổi Bias – Variance (Hồi quy Đa thức)</h4>
+            <h4 class="text-sm sm:text-base font-bold text-slate-900 dark:text-white m-0">Đánh đổi Bias–Variance &amp; Confusion Matrix / Đường cong ROC</h4>
           </div>
-          <div class="flex gap-1.5 text-xs">
-            <button type="button" data-m6-resample class="px-2.5 py-1 rounded-lg font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer">Lấy mẫu Train mới (Xem Variance)</button>
-            <button type="button" data-m6-clear class="px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-surface-850 border border-slate-200 dark:border-slate-700 cursor-pointer">Xóa vết cũ</button>
+          <div class="flex items-center gap-1 bg-slate-200/75 dark:bg-surface-850 p-1 rounded-lg border border-slate-200 dark:border-slate-800">
+            <button type="button" data-m6-tab="bv" class="px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition">1. Bias – Variance</button>
+            <button type="button" data-m6-tab="roc" class="px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition">2. Confusion Matrix &amp; ROC</button>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
-          <div class="lg:col-span-7 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1016]">
-            <canvas data-m6-canvas class="block"></canvas>
+        <!-- TAB 1: BIAS - VARIANCE -->
+        <div data-m6-panel="bv" class="space-y-3">
+          <div class="flex flex-wrap gap-1.5 justify-end text-xs">
+            <button type="button" data-m6-resample class="px-2.5 py-1 rounded-lg font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 cursor-pointer">Lấy mẫu Train mới (Xem Variance)</button>
+            <button type="button" data-m6-clear class="px-2.5 py-1 rounded-lg font-semibold bg-white dark:bg-surface-850 border border-slate-200 dark:border-slate-700 cursor-pointer">Xóa vết cũ</button>
           </div>
-          <div class="lg:col-span-5 space-y-3 text-xs">
-            <div class="p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
-              <div>
-                <div class="flex justify-between mb-1"><span>Bậc đa thức d:</span><strong data-m6-dv class="font-mono text-emerald-500">3</strong></div>
-                <input data-m6-d type="range" min="1" max="10" step="1" value="3" class="interactive-range w-full" />
-              </div>
-              <div>
-                <div class="flex justify-between mb-1"><span>Mức nhiễu σ:</span><strong data-m6-sv class="font-mono text-amber-500">0.25</strong></div>
-                <input data-m6-s type="range" min="0.05" max="0.50" step="0.05" value="0.25" class="interactive-range w-full" />
-              </div>
-              <div>
-                <div class="flex justify-between mb-1"><span>Số điểm mẫu N:</span><strong data-m6-nv class="font-mono text-sky-500">18</strong></div>
-                <input data-m6-n type="range" min="10" max="40" step="2" value="18" class="interactive-range w-full" />
-              </div>
-              <div>
-                <div class="flex justify-between mb-1"><span>Điều chuẩn Ridge λ:</span><strong data-m6-lv class="font-mono text-indigo-500">0.00</strong></div>
-                <input data-m6-l type="range" min="0" max="0.25" step="0.01" value="0" class="interactive-range w-full" />
-              </div>
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+            <div class="lg:col-span-7 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1016]">
+              <canvas data-m6-canvas class="block"></canvas>
             </div>
-            <div data-m6-stats class="p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 font-mono text-[11px] space-y-1.5 text-slate-700 dark:text-slate-300"></div>
+            <div class="lg:col-span-5 space-y-3 text-xs">
+              <div class="p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 space-y-2.5">
+                <div>
+                  <div class="flex justify-between mb-1"><span>Bậc đa thức d:</span><strong data-m6-dv class="font-mono text-emerald-500">3</strong></div>
+                  <input data-m6-d type="range" min="1" max="10" step="1" value="3" class="interactive-range w-full" />
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1"><span>Mức nhiễu σ:</span><strong data-m6-sv class="font-mono text-amber-500">0.25</strong></div>
+                  <input data-m6-s type="range" min="0.05" max="0.50" step="0.05" value="0.25" class="interactive-range w-full" />
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1"><span>Số điểm mẫu N:</span><strong data-m6-nv class="font-mono text-sky-500">18</strong></div>
+                  <input data-m6-n type="range" min="10" max="40" step="2" value="18" class="interactive-range w-full" />
+                </div>
+                <div>
+                  <div class="flex justify-between mb-1"><span>Điều chuẩn Ridge λ:</span><strong data-m6-lv class="font-mono text-indigo-500">0.00</strong></div>
+                  <input data-m6-l type="range" min="0" max="0.25" step="0.01" value="0" class="interactive-range w-full" />
+                </div>
+              </div>
+              <div data-m6-stats class="p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 font-mono text-[11px] space-y-1.5 text-slate-700 dark:text-slate-300"></div>
+            </div>
           </div>
+        </div>
+
+        <!-- TAB 2: CONFUSION MATRIX & ROC -->
+        <div data-m6-panel="roc" class="hidden space-y-3 text-xs">
+          <div class="p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="font-semibold">Ngưỡng phân loại $\\tau$:</span>
+                <strong data-m6-tauv class="font-mono text-emerald-500">0.50</strong>
+              </div>
+              <input data-m6-tau type="range" min="0.05" max="0.95" step="0.02" value="0.50" class="interactive-range w-full" />
+            </div>
+            <div>
+              <div class="flex justify-between mb-1">
+                <span class="font-semibold">Độ tách biệt 2 lớp $\\Delta\\mu$:</span>
+                <strong data-m6-sepv class="font-mono text-indigo-500">1.6</strong>
+              </div>
+              <input data-m6-sep type="range" min="0.6" max="3.4" step="0.2" value="1.6" class="interactive-range w-full" />
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1016]">
+              <canvas data-m6-dist-canvas class="block"></canvas>
+            </div>
+            <div class="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-white dark:bg-[#0b1016]">
+              <canvas data-m6-roc-canvas class="block"></canvas>
+            </div>
+          </div>
+
+          <div data-m6-rocstats class="grid grid-cols-1 md:grid-cols-12 gap-3 items-stretch"></div>
         </div>
       </div>
     `;
 
     const canvas = mountEl.querySelector('[data-m6-canvas]');
     const statsEl = mountEl.querySelector('[data-m6-stats]');
+    const distCanvas = mountEl.querySelector('[data-m6-dist-canvas]');
+    const rocCanvas = mountEl.querySelector('[data-m6-roc-canvas]');
+    const rocStatsEl = mountEl.querySelector('[data-m6-rocstats]');
 
-    function draw() {
+    function drawBV() {
+      if (activeTab !== 'bv') return;
       const pal = getTheme();
       const { ctx, width, height } = setupCanvas(canvas, 290);
       const map = makeMapper(0, 1, -1.8, 1.8, width, height);
       drawGridAndAxes(ctx, pal, map, 0, 1, -1.8, 1.8, 0.2, 0.6, 'x', 'y');
 
-      // Ghost curves from previous resamples (visualizing Variance!)
       ghostCurves.forEach((predFn) => {
         ctx.strokeStyle = pal.isDark ? 'rgba(245, 158, 11, 0.25)' : 'rgba(217, 119, 6, 0.26)';
         ctx.lineWidth = 1.4;
@@ -2355,7 +2413,6 @@ window.TheoryInteractive = (function () {
         ctx.stroke();
       });
 
-      // True underlying function f(x) = sin(1.5*pi*x)
       ctx.save();
       ctx.strokeStyle = pal.muted;
       ctx.setLineDash([6, 4]);
@@ -2370,7 +2427,6 @@ window.TheoryInteractive = (function () {
       ctx.stroke();
       ctx.restore();
 
-      // Current fitted polynomial
       const model = fitPoly(trainSet, degree, ridgeLam);
       ctx.strokeStyle = pal.emerald;
       ctx.lineWidth = 2.4;
@@ -2384,7 +2440,6 @@ window.TheoryInteractive = (function () {
       }
       ctx.stroke();
 
-      // Train scatter
       let trainMse = 0;
       trainSet.forEach((pt) => {
         const err = model(pt.x) - pt.y;
@@ -2400,7 +2455,6 @@ window.TheoryInteractive = (function () {
       });
       trainMse /= trainSet.length;
 
-      // Expected noiseless MSE against f(x) + irreducible noise variance
       let funcMse = 0;
       for (let i = 0; i < 100; i++) {
         const x = (i + 0.5) / 100;
@@ -2429,48 +2483,215 @@ window.TheoryInteractive = (function () {
       `;
     }
 
+    function drawROC() {
+      if (activeTab !== 'roc') return;
+      const pal = getTheme();
+      const sig = (z) => 1 / (1 + Math.exp(-z));
+      const scores = rocSamples.map((s) => ({
+        y: s.y,
+        p: sig((s.y === 1 ? sepDelta * 0.6 : -sepDelta * 0.6) + s.z * 0.85)
+      }));
+
+      const countsAt = (th) => {
+        let tp = 0, fp = 0, fn = 0, tn = 0;
+        scores.forEach((s) => {
+          const pred = s.p >= th ? 1 : 0;
+          if (s.y === 1 && pred === 1) tp++;
+          else if (s.y === 0 && pred === 1) fp++;
+          else if (s.y === 1 && pred === 0) fn++;
+          else tn++;
+        });
+        return { tp, fp, fn, tn };
+      };
+
+      const cur = countsAt(tau);
+      const acc = (cur.tp + cur.tn) / scores.length;
+      const prec = cur.tp + cur.fp > 0 ? cur.tp / (cur.tp + cur.fp) : 1;
+      const rec = cur.tp + cur.fn > 0 ? cur.tp / (cur.tp + cur.fn) : 0;
+      const f1 = prec + rec > 0 ? (2 * prec * rec) / (prec + rec) : 0;
+      const fprCur = cur.fp + cur.tn > 0 ? cur.fp / (cur.fp + cur.tn) : 0;
+
+      // Left canvas: Smooth logistic-normal distributions for Neg (y=0) & Pos (y=1)
+      const cD = setupCanvas(distCanvas, 235);
+      const mapD = makeMapper(0, 1, 0, 4.2, cD.width, cD.height);
+      const ctxD = cD.ctx;
+      drawGridAndAxes(ctxD, pal, mapD, 0, 1, 0, 4.2, 0.2, 1, 'P(y=1|x)', 'Mật độ');
+
+      const pdfScore = (p, muZ) => {
+        const sc = Math.max(1e-4, Math.min(1 - 1e-4, p));
+        const logit = Math.log(sc / (1 - sc));
+        const sd = 0.85;
+        const g = Math.exp(-0.5 * ((logit - muZ) / sd) ** 2) / (sd * Math.sqrt(2 * Math.PI));
+        return Math.min(4.1, g / (sc * (1 - sc)));
+      };
+
+      const fillCurve = (muZ, fillColor, strokeColor) => {
+        ctxD.beginPath();
+        const p0 = mapD.toPx(0.01, 0);
+        ctxD.moveTo(p0.x, p0.y);
+        for (let i = 1; i < 100; i++) {
+          const xv = i / 100;
+          const pt = mapD.toPx(xv, pdfScore(xv, muZ));
+          ctxD.lineTo(pt.x, pt.y);
+        }
+        const p1 = mapD.toPx(0.99, 0);
+        ctxD.lineTo(p1.x, p1.y);
+        ctxD.closePath();
+        ctxD.fillStyle = fillColor;
+        ctxD.fill();
+        ctxD.strokeStyle = strokeColor;
+        ctxD.lineWidth = 2;
+        ctxD.stroke();
+      };
+
+      fillCurve(-sepDelta * 0.6, 'rgba(239, 68, 68, 0.20)', pal.rose);
+      fillCurve(sepDelta * 0.6, 'rgba(16, 185, 129, 0.22)', pal.emerald);
+
+      const tauPx = mapD.toPx(tau, 0).x;
+      ctxD.strokeStyle = pal.isDark ? '#f8fafc' : '#0f172a';
+      ctxD.lineWidth = 2;
+      ctxD.beginPath();
+      ctxD.moveTo(tauPx, mapD.pad.t);
+      ctxD.lineTo(tauPx, mapD.pad.t + mapD.plotH);
+      ctxD.stroke();
+      ctxD.fillStyle = pal.text;
+      ctxD.font = 'bold 10.5px "JetBrains Mono", monospace';
+      ctxD.textAlign = tau > 0.72 ? 'right' : 'left';
+      ctxD.textBaseline = 'top';
+      ctxD.fillText(`τ=${tau.toFixed(2)}`, tau > 0.72 ? tauPx - 5 : tauPx + 5, mapD.pad.t + 4);
+
+      // Right canvas: Empirical ROC curve
+      const rocPts = [];
+      for (let i = 0; i <= 50; i++) {
+        const th = 1 - i / 50;
+        const c = countsAt(th);
+        rocPts.push({
+          fpr: c.fp / (c.fp + c.tn),
+          tpr: c.tp / (c.tp + c.fn)
+        });
+      }
+      let aucVal = 0;
+      for (let i = 1; i < rocPts.length; i++) {
+        aucVal += 0.5 * (rocPts[i].fpr - rocPts[i - 1].fpr) * (rocPts[i].tpr + rocPts[i - 1].tpr);
+      }
+
+      const cR = setupCanvas(rocCanvas, 235);
+      const mapR = makeMapper(0, 1, 0, 1, cR.width, cR.height);
+      const ctxR = cR.ctx;
+      drawGridAndAxes(ctxR, pal, mapR, 0, 1, 0, 1, 0.2, 0.2, 'FPR', 'TPR');
+
+      // Random diagonal
+      ctxR.save();
+      ctxR.strokeStyle = pal.muted;
+      ctxR.setLineDash([5, 4]);
+      const d0 = mapR.toPx(0, 0), d1 = mapR.toPx(1, 1);
+      ctxR.beginPath();
+      ctxR.moveTo(d0.x, d0.y);
+      ctxR.lineTo(d1.x, d1.y);
+      ctxR.stroke();
+      ctxR.restore();
+
+      ctxR.strokeStyle = pal.indigo;
+      ctxR.lineWidth = 2.4;
+      ctxR.beginPath();
+      rocPts.forEach((pt, idx) => {
+        const p = mapR.toPx(pt.fpr, pt.tpr);
+        if (idx === 0) ctxR.moveTo(p.x, p.y);
+        else ctxR.lineTo(p.x, p.y);
+      });
+      ctxR.stroke();
+
+      const op = mapR.toPx(fprCur, rec);
+      ctxR.fillStyle = pal.amber;
+      ctxR.beginPath();
+      ctxR.arc(op.x, op.y, 6, 0, Math.PI * 2);
+      ctxR.fill();
+      ctxR.strokeStyle = pal.pointBorder;
+      ctxR.lineWidth = 2;
+      ctxR.stroke();
+
+      rocStatsEl.innerHTML = `
+        <div class="md:col-span-6 p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 grid grid-cols-2 gap-2 text-center font-mono">
+          <div class="p-2 rounded bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300"><div class="text-[10px]">TP (Đúng Dương)</div><strong class="text-sm">${cur.tp}</strong></div>
+          <div class="p-2 rounded bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-300"><div class="text-[10px]">FP (Báo giả)</div><strong class="text-sm">${cur.fp}</strong></div>
+          <div class="p-2 rounded bg-amber-500/15 border border-amber-500/30 text-amber-700 dark:text-amber-300"><div class="text-[10px]">FN (Bỏ sót)</div><strong class="text-sm">${cur.fn}</strong></div>
+          <div class="p-2 rounded bg-sky-500/15 border border-sky-500/30 text-sky-700 dark:text-sky-300"><div class="text-[10px]">TN (Đúng Âm)</div><strong class="text-sm">${cur.tn}</strong></div>
+        </div>
+        <div class="md:col-span-6 p-3 rounded-lg bg-white dark:bg-surface-950 border border-slate-200 dark:border-slate-800 font-mono text-[11px] space-y-1.5 text-slate-700 dark:text-slate-300">
+          <div class="flex justify-between"><span>Accuracy:</span><strong>${(acc * 100).toFixed(1)}%</strong></div>
+          <div class="flex justify-between"><span>Precision / Recall:</span><strong class="text-emerald-500">${(prec * 100).toFixed(1)}% / ${(rec * 100).toFixed(1)}%</strong></div>
+          <div class="flex justify-between"><span>F1-Score:</span><strong class="text-indigo-500">${(f1 * 100).toFixed(1)}%</strong></div>
+          <div class="flex justify-between"><span>FPR | ROC AUC:</span><span>${(fprCur * 100).toFixed(1)}% | <strong>${aucVal.toFixed(3)}</strong></span></div>
+        </div>
+      `;
+    }
+
+    function setTab(tab) {
+      activeTab = tab;
+      mountEl.querySelectorAll('[data-m6-tab]').forEach((b) => {
+        const on = b.dataset.m6Tab === tab;
+        b.className = 'px-2.5 py-1 rounded-md text-xs font-semibold cursor-pointer transition ' + (
+          on ? 'bg-white dark:bg-surface-900 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-600 dark:text-slate-400'
+        );
+      });
+      mountEl.querySelectorAll('[data-m6-panel]').forEach((p) => p.classList.toggle('hidden', p.dataset.m6Panel !== tab));
+      if (tab === 'bv') drawBV();
+      else drawROC();
+    }
+
     trainSet = sampleTrainData();
 
+    mountEl.querySelectorAll('[data-m6-tab]').forEach((b) => b.addEventListener('click', () => setTab(b.dataset.m6Tab)));
     mountEl.querySelector('[data-m6-d]').addEventListener('input', (e) => {
       degree = Number(e.target.value);
       mountEl.querySelector('[data-m6-dv]').textContent = String(degree);
       ghostCurves = [];
-      draw();
+      drawBV();
     });
     mountEl.querySelector('[data-m6-s]').addEventListener('input', (e) => {
       noiseStd = Number(e.target.value);
       mountEl.querySelector('[data-m6-sv]').textContent = noiseStd.toFixed(2);
       ghostCurves = [];
       trainSet = sampleTrainData();
-      draw();
+      drawBV();
     });
     mountEl.querySelector('[data-m6-n]').addEventListener('input', (e) => {
       nTrain = Number(e.target.value);
       mountEl.querySelector('[data-m6-nv]').textContent = String(nTrain);
       ghostCurves = [];
       trainSet = sampleTrainData();
-      draw();
+      drawBV();
     });
     mountEl.querySelector('[data-m6-l]').addEventListener('input', (e) => {
       ridgeLam = Number(e.target.value);
       mountEl.querySelector('[data-m6-lv]').textContent = ridgeLam.toFixed(2);
-      draw();
+      drawBV();
     });
 
     mountEl.querySelector('[data-m6-resample]').addEventListener('click', () => {
       ghostCurves.push(fitPoly(trainSet, degree, ridgeLam));
       if (ghostCurves.length > 6) ghostCurves.shift();
       trainSet = sampleTrainData();
-      draw();
+      drawBV();
     });
-
     mountEl.querySelector('[data-m6-clear]').addEventListener('click', () => {
       ghostCurves = [];
-      draw();
+      drawBV();
     });
 
-    registerRedraw(draw);
-    draw();
+    mountEl.querySelector('[data-m6-tau]').addEventListener('input', (e) => {
+      tau = Number(e.target.value);
+      mountEl.querySelector('[data-m6-tauv]').textContent = tau.toFixed(2);
+      drawROC();
+    });
+    mountEl.querySelector('[data-m6-sep]').addEventListener('input', (e) => {
+      sepDelta = Number(e.target.value);
+      mountEl.querySelector('[data-m6-sepv]').textContent = sepDelta.toFixed(1);
+      drawROC();
+    });
+
+    registerRedraw(() => { if (activeTab === 'bv') drawBV(); else drawROC(); });
+    setTab('bv');
   }
 
   const BUILDERS = {

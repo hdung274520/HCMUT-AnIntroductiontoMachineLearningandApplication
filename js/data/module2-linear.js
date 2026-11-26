@@ -16,22 +16,22 @@ window.COURSE_MODULES.push(
         subtitle: 'Linear Regression (MSE, Normal Equation, Lasso L1 & Ridge L2), Logistic Regression (Sigmoid, BCE, IRLS) & Softmax đa lớp.',
         tags: ['Linear Regression', 'Lasso L1 / Ridge L2', 'Logistic & Sigmoid', 'Newton-Raphson IRLS', 'Softmax'],
         theoryHtml: String.raw`
-          <h3>1. Hồi quy Tuyến tính (Linear Regression) & Chính quy hóa</h3>
+          <h3>1. Hồi quy Tuyến tính (Linear Regression) &amp; Chính quy hóa</h3>
           <p>
-            Với đầu vào mở rộng $x_i = [1, x_{i1}, \dots, x_{id}]^T \in \mathbb{R}^{d+1}$ (đã gộp hệ số chệch bias $w_0$), mô hình dự đoán đầu ra liên tục $\hat{y}_i = w^T x_i$. Hàm mất mát <strong>Trung bình bình phương sai số (MSE)</strong> trên toàn bộ tập huấn luyện $X \in \mathbb{R}^{N \times (d+1)}$ là:
+            Với đầu vào mở rộng $x_i = [1, x_{i1}, \dots, x_{id}]^T \in \mathbb{R}^{d+1}$ (đã gộp hệ số chệch bias $\theta_0$ hay $w_0$), mô hình dự đoán đầu ra liên tục $h_\theta(x_i) = \hat{y}_i = \theta^T x_i = w^T x_i$. Hàm mất mát <strong>Trung bình bình phương sai số (MSE)</strong> trên toàn bộ tập huấn luyện $X \in \mathbb{R}^{N \times (d+1)}$ là:
           </p>
           <div class="math-card bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-            $$\mathcal{L}_{\text{MSE}}(w) = \frac{1}{2N} \|X w - y\|_2^2 = \frac{1}{2N}\sum_{i=1}^N (w^T x_i - y_i)^2$$
+            $$J(\theta) = \mathcal{L}_{\text{MSE}}(\theta) = \frac{1}{2N} \|X \theta - y\|_2^2 = \frac{1}{2N}\sum_{i=1}^N (\theta^T x_i - y_i)^2$$
           </div>
           <ul>
-            <li><strong>Nghiệm đóng (Normal Equation):</strong> Cho đạo hàm $\nabla_w \mathcal{L}(w) = \frac{1}{N}X^T(Xw - y) = 0$, khi $X^T X$ khả nghịch ta thu được nghiệm chính xác:
-              $$w^* = (X^T X)^{-1} X^T y$$
-              Nếu số chiều $d$ rất lớn ($d > 10^4$), phép nghịch đảo tốn $O(d^3)$ nên thực tế ưu tiên dùng <strong>Gradient Descent</strong>: $w \leftarrow w - \frac{\eta}{N}X^T(Xw - y)$.
+            <li><strong>Nghiệm đóng (Normal Equation):</strong> Cho đạo hàm $\nabla_\theta J(\theta) = \frac{1}{N}X^T(X\theta - y) = 0$, khi $X^T X$ khả nghịch ta thu được nghiệm chính xác:
+              $$\theta^* = (X^T X)^{-1} X^T y$$
+              Nếu số chiều $d$ rất lớn ($d > 10^4$), phép nghịch đảo tốn $O(d^3)$ nên thực tế ưu tiên dùng <strong>Gradient Descent</strong>: $\theta \leftarrow \theta - \frac{\alpha}{N}X^T(X\theta - y)$.
             </li>
-            <li><strong>Chống Quá khớp (Overfitting) bằng Regularization:</strong> Khi mô hình đa thức bậc cao hoặc đa cộng tuyến khiến $\|w\|$ phình to, ta cộng thêm thành phần phạt độ lớn trọng số (không phạt hệ số chệch $w_0$):
+            <li><strong>Chống Quá khớp (Overfitting) bằng Regularization:</strong> Khi mô hình đa thức bậc cao hoặc đa cộng tuyến khiến $\|w\|$ phình to, ta cộng thêm thành phần phạt độ lớn trọng số (không phạt hệ số chệch $w_0$, đặt $\tilde{I} = \text{diag}(0, 1, \dots, 1)$):
               <ul>
-                <li><strong>Ridge Regression ($L_2$):</strong> $\mathcal{L}_{\text{Ridge}}(w) = \frac{1}{2N}\|Xw - y\|_2^2 + \frac{\lambda}{2}\|w_{1:d}\|_2^2 \implies w^*_{\text{Ridge}} = (X^T X + N\lambda \tilde{I})^{-1}X^T y$ (với $\tilde{I} = \text{diag}(0, 1, \dots, 1)$ để không phạt hệ số chệch $w_0$). Luôn khả nghịch với mọi $\lambda > 0$ và co đều các trọng số về gần $0$.</li>
-                <li><strong>Lasso Regression ($L_1$):</strong> $\mathcal{L}_{\text{Lasso}}(w) = \frac{1}{2N}\|Xw - y\|_2^2 + \lambda \|w\|_1$. Do hình học quả cầu chuẩn $L_1$ có các đỉnh nhọn trên trục tọa độ, Lasso ép nhiều trọng số dư thừa <strong>bằng đúng $0$</strong> (nghiệm thưa — tự động chọn lọc đặc trưng <em>Feature Selection</em>).</li>
+                <li><strong>Ridge Regression ($L_2$):</strong> $J_{\text{Ridge}}(w) = \frac{1}{2N}\|Xw - y\|_2^2 + \frac{\lambda}{2N}\|w_{1:d}\|_2^2 \implies w^*_{\text{Ridge}} = (X^T X + \lambda \tilde{I})^{-1}X^T y$ (nếu viết thành phần phạt không chia $N$ là $\frac{\lambda}{2}\|w_{1:d}\|_2^2$ thì hệ số trong nghịch đảo là $N\lambda \tilde{I}$). Luôn khả nghịch với mọi $\lambda &gt; 0$ và co đều các trọng số về gần $0$.</li>
+                <li><strong>Lasso Regression ($L_1$):</strong> $J_{\text{Lasso}}(w) = \frac{1}{2N}\|Xw - y\|_2^2 + \frac{\lambda}{N} \|w_{1:d}\|_1$. Do hình học quả cầu chuẩn $L_1$ có các đỉnh nhọn trên trục tọa độ, Lasso ép nhiều trọng số dư thừa <strong>bằng đúng $0$</strong> (nghiệm thưa — tự động chọn lọc đặc trưng <em>Feature Selection</em>).</li>
               </ul>
             </li>
           </ul>
@@ -41,16 +41,16 @@ window.COURSE_MODULES.push(
             Để mô hình hóa xác suất hậu nghiệm $P(y=1 \mid x)$ nằm trong khoảng $(0, 1)$, ta nén tổ hợp tuyến tính $z = w^T x$ qua <strong>Hàm Sigmoid (Logistic)</strong>:
           </p>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
-            $$\hat{y} = \sigma(z) = \frac{1}{1 + e^{-z}}, \qquad \text{đạo hàm: } \sigma'(z) = \sigma(z)\big(1 - \sigma(z)\big)$$
+            $$a = \hat{y} = \sigma(z) = \frac{1}{1 + e^{-z}}, \qquad \sigma'(z) = \sigma(z)\big(1 - \sigma(z)\big), \qquad \text{Log-Odds: } \ln\frac{P(y=1 \mid x)}{1 - P(y=1 \mid x)} = w^T x$$
           </div>
           <ul>
-            <li><strong>MLE & Binary Cross-Entropy (BCE) Loss:</strong> Giả sử $y_i \mid x_i \sim \text{Bernoulli}(\hat{y}_i)$, cực đại hóa hàm hợp lý tương đương cực tiểu hóa hàm mất mát đối log-likelihood:
-              $$\mathcal{L}_{\text{BCE}}(w) = -\frac{1}{N}\sum_{i=1}^N \Big[y_i \log \hat{y}_i + (1 - y_i)\log(1 - \hat{y}_i)\Big], \qquad \nabla_w \mathcal{L}(w) = \frac{1}{N} X^T (\hat{y} - y)$$
+            <li><strong>MLE &amp; Binary Cross-Entropy (BCE) Loss:</strong> Giả sử $y_i \mid x_i \sim \text{Bernoulli}(a_i)$ với $a_i = \sigma(w^T x_i)$, cực đại hóa hàm hợp lý tương đương cực tiểu hóa hàm mất mát đối log-likelihood:
+              $$J_{\text{BCE}}(w) = -\frac{1}{N}\sum_{i=1}^N \Big[y_i \ln a_i + (1 - y_i)\ln(1 - a_i)\Big], \qquad \nabla_w J(w) = \frac{1}{N} X^T (a - y)$$
             </li>
-            <li><strong>Phương pháp Newton-Raphson / IRLS (Iteratively Reweighted Least Squares):</strong> Tận dụng ma trận Hessian $H = \frac{1}{N} X^T R X$ với $R = \text{diag}\big(\hat{y}_i(1-\hat{y}_i)\big)$ xác định dương để hội tụ bậc hai cực nhanh chỉ sau vài vòng lặp:
-              $$w^{(t+1)} = w^{(t)} - H^{-1}\nabla \mathcal{L}(w^{(t)}) = w^{(t)} - (X^T R X)^{-1} X^T (\hat{y} - y)$$
+            <li><strong>Phương pháp Newton-Raphson / IRLS (Iteratively Reweighted Least Squares):</strong> Tận dụng ma trận Hessian $H = \frac{1}{N} X^T R X$ với $R = \text{diag}\big(a_i(1-a_i)\big)$ xác định dương để hội tụ bậc hai cực nhanh chỉ sau vài vòng lặp:
+              $$w^{(t+1)} = w^{(t)} - H^{-1}\nabla J(w^{(t)}) = w^{(t)} - (X^T R X)^{-1} X^T (a - y)$$
             </li>
-            <li><strong>Biên quyết định (Decision Boundary):</strong> Dự đoán lớp $1$ khi $\hat{y} \ge 0.5 \iff w^T x + b \ge 0$, tạo thành siêu phẳng tuyến tính chia đôi không gian đặc trưng.</li>
+            <li><strong>Biên quyết định (Decision Boundary):</strong> Dự đoán lớp $1$ khi $\hat{y} \ge 0.5 \iff w^T x + b \ge 0$, tạo thành siêu phẳng tuyến tính $w^T x + b = 0$ chia đôi không gian đặc trưng.</li>
           </ul>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-2"></div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="0">
@@ -68,13 +68,22 @@ window.COURSE_MODULES.push(
           </div>
 
           <h3>3. Hồi quy Softmax (Softmax Regression — Phân loại Đa lớp)</h3>
-          <p>Mở rộng Logistic Regression cho $C \ge 3$ lớp loại trừ nhau. Với mỗi lớp $k \in \{1, \dots, C\}$, điểm số tuyến tính là $z_k = w_k^T x$. <strong>Hàm Softmax</strong> chuyển vector điểm số $z \in \mathbb{R}^C$ thành phân phối xác suất chuẩn hóa:</p>
+          <p>Mở rộng Logistic Regression cho $C \ge 3$ lớp loại trừ nhau. Với mỗi mẫu $x_i$ và lớp $j \in \{1, \dots, C\}$, điểm số tuyến tính là $z_{ji} = w_j^T x_i$. <strong>Hàm Softmax</strong> chuyển vector điểm số thành phân phối xác suất chuẩn hóa và tối ưu hàm mất mát <strong>Categorical Cross-Entropy</strong>:</p>
           <div class="math-card bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
-            $$P(y = k \mid x) = \hat{y}_k = \frac{e^{z_k}}{\sum_{j=1}^C e^{z_j}}, \qquad \mathcal{L}_{\text{CE}}(W) = -\frac{1}{N}\sum_{i=1}^N \sum_{k=1}^C y_{ik} \log \hat{y}_{ik}$$
+            $$P(y_i = j \mid x_i) = a_{ji} = \frac{\exp(w_j^T x_i)}{\sum_{k=1}^C \exp(w_k^T x_i)}, \qquad J_{\text{CE}}(W) = -\frac{1}{N}\sum_{i=1}^N \sum_{j=1}^C y_{ji} \ln a_{ji}$$
+            $$\nabla_{w_j} J_{\text{CE}}(W) = \frac{1}{N}\sum_{i=1}^N (a_{ji} - y_{ji}) x_i$$
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400">
-            Mẹo tính toán ổn định số học (Numerical Stability): Luôn trừ đi $z_{\max} = \max_j z_j$ trên cả tử và mẫu trước khi lấy hàm mũ $e^{z_k - z_{\max}}$ để tránh lỗi tràn số thực (overflow).
+            Mẹo tính toán ổn định số học (Numerical Stability): Luôn trừ đi $z_{\max} = \max_k z_k$ trên cả tử và mẫu trước khi lấy hàm mũ $e^{z_j - z_{\max}}$ để tránh lỗi tràn số thực (overflow).
           </p>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Giải Normal Equation:</strong> Cho bảng $3$–$4$ mẫu có $1$ hoặc $2$ đặc trưng $x_1, x_2$ và nhãn $y$, yêu cầu ghép cột bias $1$ thành ma trận $X$, giải $\theta^* = (X^T X)^{-1} X^T y$ và tính MSE.</li>
+              <li><strong>Dạng 2 — Xác suất Sigmoid, BCE &amp; Decision Boundary:</strong> Cho vector trọng số $w, b$, yêu cầu viết đường biên $w^T x + b = 0$, tính $\hat{y} = \sigma(w^T x + b)$ và giá trị BCE cho một mẫu cụ thể.</li>
+              <li><strong>Dạng 3 — Softmax đa lớp:</strong> Cho các vector trọng số $w_1, \dots, w_C$, tính điểm logits $z_j$ và phân phối xác suất đầu ra $a_{ji}$.</li>
+            </ul>
+          </div>
         `,
         exercises: [
           {
@@ -136,6 +145,44 @@ bce_loss = -(y_A * np.log(y_hat) + (1 - y_A) * np.log(1 - y_hat))
 print(f"Điểm tuyến tính z = {z:.4f}")
 print(f"Xác suất Đỗ P(y=1|x) = {y_hat:.4f} ({y_hat*100:.2f}%)")
 print(f"Binary Cross-Entropy Loss = {bce_loss:.4f}")`
+          },
+          {
+            title: 'Bài tập 2.3: Giải Normal Equation Đa biến (2 Đặc trưng x₁, x₂)',
+            problemHtml: String.raw`
+              Cho bảng dữ liệu gồm $N = 4$ mẫu với $2$ đặc trưng $(x_1, x_2)$ và nhãn đầu ra $y$:
+              <table class="my-2">
+                <thead><tr><th>Mẫu</th><th>$x_1$</th><th>$x_2$</th><th>$y$</th></tr></thead>
+                <tbody>
+                  <tr><td>1</td><td>$0$</td><td>$0$</td><td>$1$</td></tr>
+                  <tr><td>2</td><td>$2$</td><td>$0$</td><td>$5$</td></tr>
+                  <tr><td>3</td><td>$0$</td><td>$2$</td><td>$2$</td></tr>
+                  <tr><td>4</td><td>$2$</td><td>$2$</td><td>$8$</td></tr>
+                </tbody>
+              </table>
+              Hãy lập ma trận thiết kế $X$ (có cột bias $1$), giải phương trình chuẩn $\theta^* = (X^T X)^{-1} X^T y$ và tính giá trị dự đoán $\hat{y}$ cùng sai số MSE.
+            `,
+            solutionHtml: String.raw`
+              <p><strong>Bước 1 — Ma trận thiết kế $X$ và vector $y$:</strong></p>
+              $$X = \begin{bmatrix} 1 & 0 & 0 \\ 1 & 2 & 0 \\ 1 & 0 & 2 \\ 1 & 2 & 2 \end{bmatrix}, \qquad y = \begin{bmatrix} 1 \\ 5 \\ 2 \\ 8 \end{bmatrix}$$
+              <p><strong>Bước 2 — Tính $X^T X$, nghịch đảo $(X^T X)^{-1}$ và $X^T y$:</strong></p>
+              $$X^T X = \begin{bmatrix} 4 & 4 & 4 \\ 4 & 8 & 4 \\ 4 & 4 & 8 \end{bmatrix}, \qquad (X^T X)^{-1} = \frac{1}{4}\begin{bmatrix} 3 & -1 & -1 \\ -1 & 1 & 0 \\ -1 & 0 & 1 \end{bmatrix}, \qquad X^T y = \begin{bmatrix} 16 \\ 26 \\ 20 \end{bmatrix}$$
+              <p><strong>Bước 3 — Suy ra $\theta^*$ và sai số:</strong></p>
+              $$\theta^* = (X^T X)^{-1} X^T y = \frac{1}{4}\begin{bmatrix} 3(16) - 26 - 20 \\ -16 + 26 \\ -16 + 20 \end{bmatrix} = \frac{1}{4}\begin{bmatrix} 2 \\ 10 \\ 4 \end{bmatrix} = \begin{bmatrix} 0.5 \\ 2.5 \\ 1.0 \end{bmatrix}$$
+              <p>Phương trình hồi quy là $\hat{y} = 0.5 + 2.5 x_1 + 1.0 x_2$. Giá trị dự đoán $\hat{y} = [0.5, 5.5, 2.5, 7.5]^T$, sai số từng điểm $e = y - \hat{y} = [+0.5, -0.5, -0.5, +0.5]^T \implies \text{MSE} = \frac{4 \times 0.25}{4} = \mathbf{0.25}$ (tức $J(\theta^*) = \frac{1}{2}\text{MSE} = \mathbf{0.125}$).</p>
+            `,
+            verifyCode: String.raw`import numpy as np
+
+X = np.array([[1, 0, 0], [1, 2, 0], [1, 0, 2], [1, 2, 2]], dtype=float)
+y = np.array([1, 5, 2, 8], dtype=float)
+
+theta = np.linalg.inv(X.T @ X) @ (X.T @ y)
+y_hat = X @ theta
+mse = np.mean((y - y_hat) ** 2)
+
+print("Ma trận X^T X:\n", X.T @ X)
+print("Vector tham số tối ưu theta* =", theta)
+print("Giá trị dự đoán y_hat       =", y_hat)
+print(f"MSE = {mse:.4f} | Loss J = 0.5*MSE = {0.5*mse:.4f}")`
           }
         ],
         quiz: [

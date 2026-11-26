@@ -26,10 +26,11 @@ window.COURSE_MODULES.push(
             <li><strong>Học củng cố (Reinforcement Learning - RL):</strong> Tác tử (Agent) tương tác tuần tự với môi trường qua trạng thái $s_t$, chọn hành động $a_t \sim \pi(a \mid s_t)$ và nhận phần thưởng $r_t$ nhằm cực đại hóa tổng phần thưởng chiết khấu kỳ vọng $\mathbb{E}\left[\sum_{t=0}^{\infty} \gamma^t r_t\right]$ với $\gamma \in (0, 1)$.</li>
           </ul>
 
-          <h3>2. Đại số Tuyến tính: Không gian Vector, SVD & Nền tảng PCA</h3>
+          <h3>2. Đại số Tuyến tính: Chuẩn Vector, SVD &amp; Nền tảng PCA</h3>
           <p>Mỗi mẫu dữ liệu gồm $d$ đặc trưng được biểu diễn bởi vector cột $x \in \mathbb{R}^d$; toàn bộ $N$ mẫu tạo thành ma trận dữ liệu $X \in \mathbb{R}^{N \times d}$.</p>
           <div class="math-card bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
-            $$\|x\|_p = \left(\sum_{j=1}^d |x_j|^p\right)^{1/p}, \quad x^T y = \sum_{j=1}^d x_j y_j = \|x\|_2 \|y\|_2 \cos\theta$$
+            $$\|w\|_1 = \sum_{i=1}^d |w_i|, \qquad \|w\|_2 = \sqrt{\sum_{i=1}^d w_i^2}, \qquad \|w\|_\infty = \max_{1 \le i \le d} |w_i|, \qquad \|x\|_p = \left(\sum_{j=1}^d |x_j|^p\right)^{1/p}$$
+            $$x^T y = \sum_{j=1}^d x_j y_j = \|x\|_2 \|y\|_2 \cos\theta$$
           </div>
           <ul>
             <li><strong>Trị riêng & Vector riêng (Eigenvalues & Eigenvectors):</strong> Với ma trận vuông $A \in \mathbb{R}^{d \times d}$, cặp $(\lambda, v)$ thỏa mãn $A v = \lambda v$ ($v \neq 0$) cho biết hướng bất biến $v$ và hệ số co giãn $\lambda$. Nếu $A$ đối xứng thực ($A = A^T$), các vector riêng trực giao từng đôi: $A = Q \Lambda Q^T$.</li>
@@ -47,7 +48,12 @@ window.COURSE_MODULES.push(
             <li><strong>Vector đạo hàm riêng (Gradient):</strong> $\nabla_w f(w) = \left[\frac{\partial f}{\partial w_1}, \dots, \frac{\partial f}{\partial w_d}\right]^T \in \mathbb{R}^d$ luôn chỉ hướng <em>tăng nhanh nhất</em> của hàm $f$ tại điểm $w$. Các hằng đẳng thức giải tích vector quan trọng:
               $$\nabla_w (a^T w) = a, \qquad \nabla_w (w^T A w) = (A + A^T)w, \qquad \nabla_w \|Xw - y\|_2^2 = 2 X^T (Xw - y)$$
             </li>
-            <li><strong>Ma trận đạo hàm bậc hai (Hessian):</strong> $H(w) = \nabla^2_w f(w) \in \mathbb{R}^{d \times d}$ với phần tử $H_{ij} = \frac{\partial^2 f}{\partial w_i \partial w_j}$. Nếu $H(w) \succeq 0$ (bán xác định dương, mọi trị riêng $\lambda_i \ge 0$) với mọi $w$, hàm $f(w)$ là <strong>hàm lồi (Convex)</strong> — mọi cực tiểu cục bộ đồng thời là cực tiểu toàn cục!</li>
+            <li><strong>Ma trận đạo hàm bậc hai (Hessian) &amp; Phân loại điểm dừng:</strong> $H(w) = \nabla^2_w f(w) \in \mathbb{R}^{d \times d}$ với phần tử $H_{ij} = \frac{\partial^2 f}{\partial w_i \partial w_j}$.
+              <ul>
+                <li>Nếu $H(w) \succeq 0$ (bán xác định dương, mọi trị riêng $\lambda_i \ge 0$) với mọi $w$, hàm $f(w)$ là <strong>hàm lồi (Convex)</strong> — mọi cực tiểu cục bộ đồng thời là cực tiểu toàn cục!</li>
+                <li>Tại điểm dừng $\nabla f(w^*) = 0$ (xét trường hợp $2$ biến theo tiêu chuẩn Sylvester với $\Delta_1 = H_{11}, \Delta_2 = \det H$): nếu $H(w^*) \succ 0$ ($\Delta_1 &gt; 0, \det H &gt; 0$) $\Rightarrow$ <strong>cực tiểu cục bộ</strong>; nếu $H(w^*) \prec 0$ ($\Delta_1 &lt; 0, \det H &gt; 0$) $\Rightarrow$ <strong>cực đại cục bộ</strong>; nếu $\det H &lt; 0$ (trị riêng trái dấu) $\Rightarrow$ <strong>điểm yên ngựa (Saddle point)</strong>.</li>
+              </ul>
+            </li>
             <li><strong>Quy tắc dây chuyền (Chain Rule):</strong> Nếu $\mathcal{L} = g(z)$ và $z = h(w)$ thì $\frac{\partial \mathcal{L}}{\partial w} = \left(\frac{\partial z}{\partial w}\right)^T \frac{\partial \mathcal{L}}{\partial z}$. Đây là trụ cột toán học của thuật toán <em>Backpropagation</em> trong mạng nơ-ron sâu.</li>
           </ul>
 
@@ -59,14 +65,22 @@ window.COURSE_MODULES.push(
             $$\hat{\theta}_{\text{MLE}} = \arg\max_{\theta} \sum_{i=1}^N \log P(y_i \mid x_i; \theta), \qquad \hat{\theta}_{\text{MAP}} = \arg\max_{\theta} \left[\sum_{i=1}^N \log P(y_i \mid x_i; \theta) + \log P(\theta)\right]$$
           </div>
           <p>
-            Để cực tiểu hóa hàm mất mát khả vi $\mathcal{L}(w)$, thuật toán <strong>Gradient Descent (GD)</strong> cập nhật lặp ngược chiều Gradient với tốc độ học (Learning rate) $\eta > 0$:
+            Để cực tiểu hóa hàm mất mát khả vi $\mathcal{L}(w)$, thuật toán <strong>Gradient Descent (GD)</strong> cập nhật lặp ngược chiều Gradient với tốc độ học (Learning rate) $\alpha &gt; 0$ (còn ký hiệu là $\eta$):
           </p>
           <div class="math-card bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
-            $$w^{(t+1)} = w^{(t)} - \eta \nabla_w \mathcal{L}\big(w^{(t)}\big)$$
+            $$w^{(t+1)} := w^{(t)} - \alpha \nabla_w \mathcal{L}\big(w^{(t)}\big) \quad \Longleftrightarrow \quad w^{(t+1)} := w^{(t)} - \eta \nabla_w \mathcal{L}\big(w^{(t)}\big)$$
           </div>
           <p class="text-xs text-slate-500 dark:text-slate-400">
             Lưu ý thực hành: Nếu $\eta$ quá nhỏ, thuật toán hội tụ rất chậm; nếu $\eta$ quá lớn ($\eta > \frac{2}{\lambda_{\max}(H)}$ với hàm bậc hai), chuỗi lặp sẽ dao động mạnh và phân kỳ ra vô cùng.
           </p>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Tìm điểm dừng &amp; Xét cực trị bằng Hessian:</strong> Cho hàm đa biến $f(x, y)$, giải $\nabla f = 0$ rồi kiểm tra dấu $\Delta_1 = f_{xx}$ và $\det(H)$ để kết luận cực tiểu cục bộ, cực đại hay điểm yên ngựa.</li>
+              <li><strong>Dạng 2 — Cập nhật thủ công Gradient Descent:</strong> Cho hàm mất mát $J(w)$, điểm khởi tạo $w^{(0)}$ và learning rate $\alpha$ (hoặc $\eta$), tính tay $w^{(1)}, w^{(2)}$ và giá trị loss tương ứng.</li>
+              <li><strong>Dạng 3 — Quy tâm dữ liệu, Hiệp phương sai &amp; SVD:</strong> Cho ma trận dữ liệu $X$, tính $\tilde{X}$, ma trận hiệp phương sai $S$ và tìm hướng thành phần chính đầu tiên.</li>
+            </ul>
+          </div>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-1"></div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="2">
             <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
@@ -153,6 +167,41 @@ print("Dữ liệu quy tâm X_tilde:\n", X_centered)
 print("\nMa trận hiệp phương sai S:\n", np.round(S, 4))
 print("\nGiá trị kỳ dị Sigma:", np.round(s_vals, 4))
 print("Thành phần chính thứ nhất v1:", np.round(Vt[0], 4))`
+          },
+          {
+            title: 'Bài tập 1.3: Tìm điểm dừng & Phân loại Cực tiểu cục bộ / Yên ngựa bằng Ma trận Hessian',
+            problemHtml: String.raw`
+              Cho hàm hai biến $f(x, y) = x^3 - 3x + y^2 - 4y + 5$.
+              <ol class="list-decimal pl-5 mt-2 space-y-1">
+                <li>Tìm tất cả các điểm dừng thỏa mãn $\nabla f(x, y) = \mathbf{0}$.</li>
+                <li>Tính ma trận Hessian $H(x, y)$ và áp dụng tiêu chuẩn Sylvester để kết luận điểm nào là <strong>cực tiểu cục bộ</strong>, điểm nào là <strong>điểm yên ngựa (Saddle point)</strong>.</li>
+              </ol>
+            `,
+            solutionHtml: String.raw`
+              <p><strong>Bước 1 — Tìm điểm dừng:</strong></p>
+              $$\nabla f(x, y) = \begin{bmatrix} \frac{\partial f}{\partial x} \\ \frac{\partial f}{\partial y} \end{bmatrix} = \begin{bmatrix} 3x^2 - 3 \\ 2y - 4 \end{bmatrix} = \begin{bmatrix} 0 \\ 0 \end{bmatrix} \implies \begin{cases} x = \pm 1 \\ y = 2 \end{cases}$$
+              <p>Vậy có $2$ điểm dừng: $P_1(1, 2)$ và $P_2(-1, 2)$.</p>
+              <p><strong>Bước 2 — Ma trận Hessian &amp; Phân loại điểm dừng:</strong></p>
+              $$H(x, y) = \begin{bmatrix} \frac{\partial^2 f}{\partial x^2} & \frac{\partial^2 f}{\partial x \partial y} \\ \frac{\partial^2 f}{\partial y \partial x} & \frac{\partial^2 f}{\partial y^2} \end{bmatrix} = \begin{bmatrix} 6x & 0 \\ 0 & 2 \end{bmatrix}$$
+              <ul>
+                <li>Tại $P_1(1, 2)$: $H(1, 2) = \begin{bmatrix} 6 & 0 \\ 0 & 2 \end{bmatrix}$. Có $\Delta_1 = 6 &gt; 0$ và $\det(H) = 12 &gt; 0$ (hai trị riêng $\lambda_1 = 6, \lambda_2 = 2$ đều dương) $\implies$ $H \succ 0$, vậy $P_1(1, 2)$ là <strong>cực tiểu cục bộ</strong> với $f(1, 2) = -1$.</li>
+                <li>Tại $P_2(-1, 2)$: $H(-1, 2) = \begin{bmatrix} -6 & 0 \\ 0 & 2 \end{bmatrix}$. Có $\det(H) = -12 &lt; 0$ (hai trị riêng $\lambda_1 = -6, \lambda_2 = 2$ trái dấu) $\implies$ $P_2(-1, 2)$ là <strong>điểm yên ngựa</strong> với $f(-1, 2) = 3$.</li>
+              </ul>
+            `,
+            verifyCode: String.raw`import numpy as np
+
+def f(x, y):
+    return x**3 - 3*x + y**2 - 4*y + 5
+
+def hessian(x, y):
+    return np.array([[6.0*x, 0.0], [0.0, 2.0]])
+
+for name, (x, y) in [("P1", (1.0, 2.0)), ("P2", (-1.0, 2.0))]:
+    H = hessian(x, y)
+    eigs = np.linalg.eigvals(H)
+    detH = np.linalg.det(H)
+    kind = "Cực tiểu cục bộ" if np.all(eigs > 0) else ("Cực đại cục bộ" if np.all(eigs < 0) else "Điểm yên ngựa (Saddle point)")
+    print(f"{name}({x:+.0f}, {y:+.0f}): f={f(x,y):+.1f} | eig(H)={eigs} | det(H)={detH:+.1f} => {kind}")`
           }
         ],
         quiz: [
@@ -334,6 +383,50 @@ for ax, lr, title, color in zip(axes, learning_rates, titles, colors):
     ax.legend(fontsize=8)
 
 axes[0].set_ylabel('Giá trị f(w)')
+plt.tight_layout()
+plt.show()`
+          },
+          {
+            title: 'Lab 1.3: Gradient Descent tìm cực tiểu hàm f(x) = x² + 5 sin(x)',
+            code: String.raw`# ==============================================================================
+# MODULE 1 - LAB 1.3: GRADIENT DESCENT TÌM CỰC TIỂU HÀM f(x) = x^2 + 5*sin(x)
+# ==============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+def f(x):
+    return x**2 + 5.0 * np.sin(x)
+
+def df(x):
+    return 2.0 * x + 5.0 * np.cos(x)
+
+def run_gd(x0, alpha=0.08, steps=40):
+    xs = [x0]
+    x = x0
+    for _ in range(steps):
+        x = x - alpha * df(x)
+        xs.append(x)
+    return np.array(xs)
+
+# Thử nghiệm với 2 điểm khởi tạo khác nhau trên hàm phi lồi f(x) = x^2 + 5*sin(x)
+traj_right = run_gd(x0=5.0,  alpha=0.08, steps=40)
+traj_left  = run_gd(x0=-4.5, alpha=0.08, steps=40)
+
+print("=== GRADIENT DESCENT TRÊN HÀM f(x) = x^2 + 5*sin(x) (alpha = 0.08) ===")
+print(f"Xuất phát x^(0) = +5.0 -> Sau 40 bước: x* = {traj_right[-1]:+.4f}, f(x*) = {f(traj_right[-1]):+.4f}")
+print(f"Xuất phát x^(0) = -4.5 -> Sau 40 bước: x* = {traj_left[-1]:+.4f}, f(x*) = {f(traj_left[-1]):+.4f}")
+
+x_grid = np.linspace(-5.5, 5.5, 400)
+fig, ax = plt.subplots(figsize=(8.8, 4.3))
+ax.plot(x_grid, f(x_grid), color='#334155', linewidth=2.2, label='f(x) = x² + 5 sin(x)')
+ax.plot(traj_right, f(traj_right), 'o--', color='#f59e0b', markersize=4.5, linewidth=1.4, label='Xuất phát x₀ = +5.0 (qua vùng uốn sóng)')
+ax.plot(traj_left, f(traj_left), 's-', color='#10b981', markersize=4.5, linewidth=1.6, label='Xuất phát x₀ = -4.5 (xuống dốc mượt)')
+ax.scatter([traj_left[-1]], [f(traj_left[-1])], color='#ef4444', s=110, marker='*', zorder=6, label=f'Cực tiểu x* ≈ {traj_left[-1]:.3f}')
+ax.set_title('Gradient Descent tìm cực tiểu hàm phi lồi f(x) = x² + 5 sin(x)')
+ax.set_xlabel('x')
+ax.set_ylabel('f(x)')
+ax.legend(fontsize=8.5)
+ax.grid(alpha=0.3)
 plt.tight_layout()
 plt.show()`
           }

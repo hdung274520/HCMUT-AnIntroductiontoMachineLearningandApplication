@@ -13,10 +13,33 @@ window.COURSE_MODULES.push(
         shortLabel: 'M6 • Nâng cao',
         badge: 'MODULE 06 / 06',
         title: 'Đánh giá Mô hình & Chủ đề Nâng cao',
-        subtitle: 'Đánh đổi Bias–Variance, Hệ thống gợi ý (Content-based & Collaborative Filtering) và Học chuyển giao (Transfer Learning).',
-        tags: ['Bias-Variance Trade-off', 'Underfitting / Overfitting', 'Content-based RecSys', 'Collaborative Filtering', 'Transfer Learning'],
+        subtitle: 'Confusion Matrix, Precision/Recall/F1, ROC–AUC, Đánh đổi Bias–Variance, Hệ thống gợi ý & Transfer Learning.',
+        tags: ['Confusion Matrix', 'Precision / Recall / F1', 'ROC & AUC', 'Bias-Variance Trade-off', 'RecSys & Transfer Learning'],
         theoryHtml: String.raw`
-          <h3>1. Đánh đổi Độ chệch – Phương sai (Bias–Variance Trade-off)</h3>
+          <h3>1. Đánh giá Mô hình: Ma trận Nhầm lẫn, ROC–AUC &amp; Chỉ số Hồi quy</h3>
+          <p>
+            Với bài toán phân loại nhị phân (Dương $1$ / Âm $0$), chỉ số tổng thể <strong>Accuracy</strong> dễ gây hiểu nhầm khi dữ liệu mất cân bằng (ví dụ $99\%$ ca âm tính). Ta phân tích chi tiết bằng <strong>Ma trận nhầm lẫn (Confusion Matrix)</strong> gồm $4$ đại lượng: <strong>TP</strong> (True Positive), <strong>FP</strong> (False Positive — báo động giả), <strong>FN</strong> (False Negative — bỏ sót) và <strong>TN</strong> (True Negative).
+          </p>
+          <table>
+            <thead>
+              <tr><th>Thực tế \ Dự đoán</th><th>Dự đoán Dương ($\hat{y}=1$)</th><th>Dự đoán Âm ($\hat{y}=0$)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Thực tế Dương ($y=1$)</strong></td><td><strong>TP</strong> (Đúng Dương)</td><td><strong>FN</strong> (Bỏ sót / Sai Âm)</td></tr>
+              <tr><td><strong>Thực tế Âm ($y=0$)</strong></td><td><strong>FP</strong> (Báo giả / Sai Dương)</td><td><strong>TN</strong> (Đúng Âm)</td></tr>
+            </tbody>
+          </table>
+          <div class="math-card bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            $$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}, \qquad \text{Precision} = \frac{TP}{TP + FP}, \qquad \text{Recall (TPR)} = \frac{TP}{TP + FN}$$
+            $$\text{F1-Score} = \frac{2 \cdot \text{Precision} \cdot \text{Recall}}{\text{Precision} + \text{Recall}} = \frac{2TP}{2TP + FP + FN}, \qquad \text{FPR} = \frac{FP}{FP + TN}, \qquad \text{Specificity (TNR)} = \frac{TN}{TN + FP}$$
+          </div>
+          <ul>
+            <li><strong>Đánh đổi Precision – Recall:</strong> Tăng ngưỡng phân loại $\tau$ giúp tăng <em>Precision</em> (ít báo giả FP) nhưng làm giảm <em>Recall</em> (dễ bỏ sót FN). Trong lọc thư rác ưu tiên <strong>Precision</strong> (tránh nhầm thư quan trọng); trong chẩn đoán bệnh hiểm nghèo ưu tiên <strong>Recall</strong> (tránh bỏ sót người bệnh).</li>
+            <li><strong>Đường cong ROC &amp; AUC:</strong> Vẽ đồ thị $\text{TPR (Recall)}$ theo $\text{FPR}$ khi quét ngưỡng $\tau \in [0, 1]$. Diện tích dưới đường cong <strong>AUC $\in [0.5, 1]$</strong> đo xác suất mô hình xếp hạng một mẫu dương ngẫu nhiên cao hơn một mẫu âm ngẫu nhiên (không phụ thuộc ngưỡng $\tau$).</li>
+            <li><strong>Đánh giá Hồi quy &amp; $K$-Fold Cross-Validation:</strong> Dùng $\text{MAE} = \frac{1}{N}\sum |y_i-\hat{y}_i|$, $\text{RMSE} = \sqrt{\frac{1}{N}\sum (y_i-\hat{y}_i)^2}$, $R^2 = 1 - \frac{\sum(y_i-\hat{y}_i)^2}{\sum(y_i-\bar{y})^2}$; và ước lượng sai số tổng quát bằng $K$-Fold CV: $\text{CV}_{(K)} = \frac{1}{K}\sum_{k=1}^K \text{Err}_k$.</li>
+          </ul>
+
+          <h3>2. Đánh đổi Độ chệch – Phương sai (Bias–Variance Trade-off)</h3>
           <p>
             Giả sử dữ liệu sinh từ quy luật thực $y = f(x) + \epsilon$ với nhiễu $\mathbb{E}[\epsilon]=0, \text{Var}(\epsilon)=\sigma_\epsilon^2$. Kỳ vọng sai số dự đoán bình phương của mô hình $\hat{f}_{\mathcal{D}}(x)$ khi lấy trung bình trên các tập huấn luyện $\mathcal{D}$ phân rã thành 3 thành phần:
           </p>
@@ -29,7 +52,7 @@ window.COURSE_MODULES.push(
           </ul>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-6"></div>
 
-          <h3>2. Hệ thống Gợi ý (Recommender Systems)</h3>
+          <h3>3. Hệ thống Gợi ý (Recommender Systems)</h3>
           <ul>
             <li><strong>Content-based Filtering (Lọc dựa trên nội dung):</strong> Biểu diễn mỗi sản phẩm/bài viết bởi vector đặc trưng nội dung $\mathbf{x}_i$ (TF-IDF mô tả, thể loại, nhãn kỹ thuật) và xây dựng hồ sơ sở thích người dùng $\mathbf{u}_u$ từ lịch sử họ đã thích. Gợi ý các mục chưa xem có độ tương đồng Cosine cao nhất:
               $$\text{sim}(\mathbf{u}_u, \mathbf{x}_i) = \frac{\mathbf{u}_u \cdot \mathbf{x}_i}{\|\mathbf{u}_u\|_2 \|\mathbf{x}_i\|_2}$$
@@ -37,13 +60,13 @@ window.COURSE_MODULES.push(
             </li>
             <li><strong>Collaborative Filtering (Lọc cộng tác):</strong> Khai thác trí tuệ đám đông từ ma trận đánh giá thưa User–Item $R \in \mathbb{R}^{M \times N}$ mà không cần biết siêu dữ liệu sản phẩm:
               <ul>
-                <li><strong>Neighborhood-based (User-based / Item-based CF):</strong> Chuẩn hóa trung bình đánh giá của từng người dùng và dự đoán ô khuyết dựa trên trung bình có trọng số tương đồng Pearson / Cosine của $k$ láng giềng gần nhất.</li>
+                <li><strong>Neighborhood-based (User-based / Item-based CF):</strong> Chuẩn hóa trung bình đánh giá của từng người dùng ($\tilde{r}_{ui} = r_{ui} - \bar{r}_u$), tính độ tương đồng Cosine / Pearson $\text{sim}(u, v) = \frac{\sum_{i \in I_{uv}} \tilde{r}_{ui}\tilde{r}_{vi}}{\sqrt{\sum \tilde{r}_{ui}^2}\sqrt{\sum \tilde{r}_{vi}^2}}$ và dự đoán $\hat{r}_{ui} = \bar{r}_u + \frac{\sum_{v \in \mathcal{N}_k(u)} \text{sim}(u,v)\,\tilde{r}_{vi}}{\sum_{v \in \mathcal{N}_k(u)} |\text{sim}(u,v)|}$.</li>
                 <li><strong>Matrix Factorization (SVD / Latent Factor Models):</strong> Xấp xỉ hạng thấp $R \approx P Q^T$ ($P \in \mathbb{R}^{M \times k}, Q \in \mathbb{R}^{N \times k}$), dự đoán $\hat{r}_{ui} = \mu + b_u + b_i + p_u^T q_i$ bằng SGD hoặc ALS.</li>
               </ul>
             </li>
           </ul>
 
-          <h3>3. Học Chuyển giao (Transfer Learning)</h3>
+          <h3>4. Học Chuyển giao (Transfer Learning)</h3>
           <p>
             Thay vì huấn luyện mạng nơ-ron sâu hàng triệu tham số từ đầu (<em>from scratch</em>) trên tập dữ liệu đích nhỏ dễ gây Overfitting nặng, <strong>Transfer Learning</strong> tái sử dụng trọng số từ mô hình nguồn đã tiền huấn luyện trên kho dữ liệu khổng lồ (như ResNet/ViT trên ImageNet hoặc BERT/GPT trên văn bản lớn):
           </p>
@@ -57,6 +80,14 @@ window.COURSE_MODULES.push(
           <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
             Mẹo thực tế: Nếu dữ liệu đích nhỏ nhưng <em>khác miền</em> so với ảnh tự nhiên (ví dụ ảnh vệ tinh, X-quang), có thể giữ nguyên vài tầng đầu trích xuất cạnh/vân và chỉ Fine-tune các khối sâu cuối cùng.
           </p>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Tính chỉ số Confusion Matrix:</strong> Cho bộ $TP, FP, FN, TN$, tính Accuracy, Precision, Recall, F1-Score và phân tích mô hình mắc lỗi False Positive hay False Negative nhiều hơn.</li>
+              <li><strong>Dạng 2 — Phân tích Overfitting / Underfitting qua bảng Epoch:</strong> Cho bảng Train Error vs Validation Error qua các Epoch, xác định thời điểm mô hình bắt đầu Overfitting và đề xuất biện pháp khắc phục.</li>
+              <li><strong>Dạng 3 — Hệ thống gợi ý Collaborative Filtering:</strong> Cho các vector đánh giá đã quy tâm, tính Cosine Similarity và dự đoán điểm đánh giá khuyết.</li>
+            </ul>
+          </div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="0">
             <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
               <span>⚡ Kiểm tra nhanh hiểu bài</span>
@@ -136,6 +167,74 @@ pred_dev = (sim12 * r2_item4 + sim13 * r3_item4) / (abs(sim12) + abs(sim13))
 print(f"Cosine Similarity(U1, U2) = {sim12:+.4f}")
 print(f"Cosine Similarity(U1, U3) = {sim13:+.4f}")
 print(f"Dự đoán độ lệch điểm sản phẩm 4 của U1: {pred_dev:+.4f} (Nên gợi ý!)")`
+          },
+          {
+            title: 'Bài tập 6.3: Tính Accuracy, Precision, Recall & F1-Score từ Confusion Matrix',
+            problemHtml: String.raw`
+              Một mô hình phân loại nhị phân kiểm thử trên $300$ mẫu thu được Confusion Matrix gồm: $TP = 80$, $FP = 20$, $FN = 10$, $TN = 190$.
+              <ol class="list-decimal pl-5 mt-2 space-y-1">
+                <li>Tính các chỉ số Accuracy, Precision, Recall, F1-Score và False Positive Rate (FPR).</li>
+                <li>Nhận xét mô hình đang mắc lỗi <em>False Positive</em> hay <em>False Negative</em> nhiều hơn và đề xuất hướng điều chỉnh ngưỡng nếu cần ưu tiên giảm báo động giả.</li>
+              </ol>
+            `,
+            solutionHtml: String.raw`
+              <p><strong>1. Tính các chỉ số đánh giá:</strong></p>
+              <ul>
+                <li>$\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN} = \frac{80 + 190}{300} = \frac{270}{300} = \mathbf{90.00\%}$</li>
+                <li>$\text{Precision} = \frac{TP}{TP + FP} = \frac{80}{80 + 20} = \frac{80}{100} = \mathbf{80.00\%}$</li>
+                <li>$\text{Recall (TPR)} = \frac{TP}{TP + FN} = \frac{80}{80 + 10} = \frac{80}{90} \approx \mathbf{88.89\%}$</li>
+                <li>$\text{F1-Score} = \frac{2 \times 0.80 \times 0.8889}{0.80 + 0.8889} = \frac{160}{190} \approx \mathbf{84.21\%}$</li>
+                <li>$\text{FPR} = \frac{FP}{FP + TN} = \frac{20}{20 + 190} = \frac{20}{210} \approx \mathbf{9.52\%}$</li>
+              </ul>
+              <p><strong>2. Nhận xét:</strong> Số lượng <strong>False Positive ($FP = 20$)</strong> cao gấp đôi <strong>False Negative ($FN = 10$)</strong>, làm cho Precision ($80.00\%$) thấp hơn rõ rệt so với Recall ($88.89\%$). Nếu bài toán ưu tiên hạn chế báo động giả (cần Precision cao hơn), ta nên <strong>tăng ngưỡng quyết định $\tau$</strong> (ví dụ từ $0.5$ lên $0.65$).</p>
+            `,
+            verifyCode: String.raw`TP, FP, FN, TN = 80, 20, 10, 190
+
+accuracy = (TP + TN) / (TP + FP + FN + TN)
+precision = TP / (TP + FP)
+recall = TP / (TP + FN)
+f1 = 2 * precision * recall / (precision + recall)
+fpr = FP / (FP + TN)
+
+print(f"Accuracy  = {accuracy*100:.2f}%")
+print(f"Precision = {precision*100:.2f}%")
+print(f"Recall    = {recall*100:.2f}%")
+print(f"F1-Score  = {f1*100:.2f}%")
+print(f"FPR       = {fpr*100:.2f}%")
+print(f"Nhận xét  : FP ({FP}) > FN ({FN}) -> Precision thấp hơn Recall.")`
+          },
+          {
+            title: 'Bài tập 6.4: Phân tích bảng Train vs Validation Error qua các Epoch',
+            problemHtml: String.raw`
+              Theo dõi quá trình huấn luyện một mạng nơ-ron qua 30 Epoch, ta ghi nhận bảng sai số sau:
+              <table class="my-2">
+                <thead><tr><th>Epoch</th><th>1</th><th>5</th><th>10</th><th>15</th><th>20</th><th>25</th><th>30</th></tr></thead>
+                <tbody>
+                  <tr><td><strong>Train Error (%)</strong></td><td>38.0</td><td>19.5</td><td>10.2</td><td>5.8</td><td>2.6</td><td>1.4</td><td>0.9</td></tr>
+                  <tr><td><strong>Val Error (%)</strong></td><td>39.2</td><td>20.8</td><td>12.1</td><td>8.2</td><td>10.5</td><td>14.8</td><td>19.4</td></tr>
+                </tbody>
+              </table>
+              Xác định giai đoạn Underfitting, thời điểm tối ưu, thời điểm bắt đầu bị <strong>Overfitting</strong> và đề xuất $3$ phương pháp xử lý.
+            `,
+            solutionHtml: String.raw`
+              <ul>
+                <li><strong>Epoch 1–10 (Underfitting ban đầu):</strong> Cả Train Error ($38.0\% \to 10.2\%$) và Val Error ($39.2\% \to 12.1\%$) đều còn cao và cùng giảm nhanh $\implies$ mô hình đang học đặc trưng tốt dần.</li>
+                <li><strong>Epoch 15 (Điểm tối ưu — Sweet Spot):</strong> Validation Error đạt giá trị thấp nhất ($8.2\%$), độ chênh lệch Train–Val chỉ $2.4\%$.</li>
+                <li><strong>Từ sau Epoch 15 (Epoch 20–30 — Bắt đầu Overfitting):</strong> Train Error tiếp tục giảm sâu về $0.9\%$, nhưng Validation Error đảo chiều tăng vọt từ $8.2\% \to 10.5\% \to 19.4\%$ (khoảng cách vênh tới $18.5\%$) do mạng bắt đầu học thuộc nhiễu tập huấn luyện.</li>
+                <li><strong>Phương pháp xử lý:</strong> (1) Áp dụng <strong>Early Stopping</strong> lưu checkpoint tốt nhất tại Epoch 15; (2) Thêm <strong>Regularization</strong> (Dropout, $L_2$ Weight Decay); (3) Bổ sung dữ liệu hoặc dùng <strong>Data Augmentation</strong>.</li>
+              </ul>
+            `,
+            verifyCode: String.raw`epochs    = [1, 5, 10, 15, 20, 25, 30]
+train_err = [38.0, 19.5, 10.2, 5.8, 2.6, 1.4, 0.9]
+val_err   = [39.2, 20.8, 12.1, 8.2, 10.5, 14.8, 19.4]
+
+best_idx = min(range(len(val_err)), key=lambda i: val_err[i])
+print(f"Điểm dừng Early Stopping tối ưu: Epoch {epochs[best_idx]} (Val Error thấp nhất = {val_err[best_idx]:.1f}%)")
+print("\nPhân tích từng mốc:")
+for e, tr, val in zip(epochs, train_err, val_err):
+    gap = val - tr
+    tag = "TỐI ƯU" if e == epochs[best_idx] else ("OVERFITTING (Val tăng)" if e > epochs[best_idx] else "Đang hội tụ")
+    print(f"Epoch {e:2d}: Train={tr:4.1f}% | Val={val:4.1f}% | Gap={gap:+5.1f}% -> {tag}")`
           }
         ],
         quiz: [
@@ -171,6 +270,17 @@ print(f"Dự đoán độ lệch điểm sản phẩm 4 của U1: {pred_dev:+.4f
             ],
             answer: 0,
             explain: 'Content-based khớp đặc trưng nội dung item với lịch sử của chính user đó; Collaborative Filtering tìm mẫu tương đồng hành vi giữa cộng đồng users và items.'
+          },
+          {
+            q: 'Trong bài toán sàng lọc ung thư (dữ liệu chỉ có 2% bệnh nhân dương tính, bỏ sót ca bệnh rất nguy hiểm), chỉ số nào phản ánh trực tiếp khả năng KHÔNG bỏ sót bệnh nhân dương tính?',
+            options: [
+              'Accuracy',
+              'Recall (Sensitivity = TP / (TP + FN))',
+              'False Positive Rate',
+              'Specificity'
+            ],
+            answer: 1,
+            explain: 'Recall = TP / (TP + FN) đo tỷ lệ bệnh nhân dương tính thực sự được phát hiện đúng. Nếu muốn tối thiểu hóa số ca bỏ sót (FN), ta phải ưu tiên Recall cao (và dùng thêm F1 / PR-AUC thay vì Accuracy).'
           }
         ],
         labs: [
@@ -418,6 +528,80 @@ axes[1].set_xlabel('Số lượng mẫu huấn luyện ở tác vụ đích')
 axes[1].set_ylabel('Độ chính xác Test (%)')
 axes[1].set_ylim(50, 102)
 axes[1].legend(fontsize=8)
+axes[1].grid(alpha=0.3)
+
+plt.tight_layout()
+plt.show()`
+          },
+          {
+            title: 'Lab 6.3: Confusion Matrix, F1-Score & Đường cong ROC / AUC',
+            code: String.raw`# ==============================================================================
+# MODULE 6 - LAB 6.3: ĐÁNH GIÁ PHÂN LOẠI (CONFUSION MATRIX, F1 & ROC / AUC)
+# ==============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import make_classification
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import SVC
+from sklearn.metrics import confusion_matrix, classification_report, roc_curve, auc
+
+# 1. Tạo tập dữ liệu phân loại nhị phân mất cân bằng (25% lớp dương, 75% lớp âm)
+X, y = make_classification(
+    n_samples=600, n_features=12, n_informative=6, n_redundant=3,
+    weights=[0.75, 0.25], flip_y=0.06, random_state=42
+)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, stratify=y, random_state=42)
+
+scaler = StandardScaler()
+X_train_sc = scaler.fit_transform(X_train)
+X_test_sc = scaler.transform(X_test)
+
+# 2. So sánh Logistic Regression vs SVM RBF (probability=True)
+clf_lr  = LogisticRegression(random_state=42).fit(X_train_sc, y_train)
+clf_svm = SVC(kernel='rbf', C=2.0, probability=True, random_state=42).fit(X_train_sc, y_train)
+
+y_pred_svm = clf_svm.predict(X_test_sc)
+cm = confusion_matrix(y_test, y_pred_svm)
+
+print("=== BÁO CÁO PHÂN LOẠI TRÊN TẬP TEST (RBF SVM) ===")
+print(classification_report(y_test, y_pred_svm, target_names=['Âm tính (0)', 'Dương tính (1)']))
+
+# 3. Vẽ Confusion Matrix Heatmap & Đường cong ROC / AUC
+prob_lr  = clf_lr.predict_proba(X_test_sc)[:, 1]
+prob_svm = clf_svm.predict_proba(X_test_sc)[:, 1]
+
+fpr_lr,  tpr_lr,  _ = roc_curve(y_test, prob_lr)
+fpr_svm, tpr_svm, _ = roc_curve(y_test, prob_svm)
+auc_lr  = auc(fpr_lr, tpr_lr)
+auc_svm = auc(fpr_svm, tpr_svm)
+
+print(f"ROC AUC Score -> Logistic Regression: {auc_lr:.4f} | RBF SVM: {auc_svm:.4f}")
+
+fig, axes = plt.subplots(1, 2, figsize=(11.2, 4.3))
+
+# Heatmap Confusion Matrix
+im = axes[0].imshow(cm, cmap='Blues')
+axes[0].set_title('Confusion Matrix (RBF SVM)')
+axes[0].set_xticks([0, 1])
+axes[0].set_yticks([0, 1])
+axes[0].set_xticklabels(['Đoán Âm (0)', 'Đoán Dương (1)'])
+axes[0].set_yticklabels(['Thực Âm (0)', 'Thực Dương (1)'])
+labels_cm = [['TN', 'FP'], ['FN', 'TP']]
+for i in range(2):
+    for j in range(2):
+        axes[0].text(j, i, f"{labels_cm[i][j]}\n{cm[i, j]}", ha='center', va='center',
+                     color='white' if cm[i, j] > cm.max()/2 else '#0f172a', fontsize=11, fontweight='bold')
+
+# ROC Curve
+axes[1].plot(fpr_svm, tpr_svm, color='#10b981', linewidth=2.4, label=f'RBF SVM (AUC = {auc_svm:.3f})')
+axes[1].plot(fpr_lr, tpr_lr, color='#4f46e5', linewidth=2.0, label=f'Logistic Reg (AUC = {auc_lr:.3f})')
+axes[1].plot([0, 1], [0, 1], '--', color='#64748b', linewidth=1.4, label='Ngẫu nhiên (AUC = 0.500)')
+axes[1].set_title('Đường cong ROC & Diện tích AUC')
+axes[1].set_xlabel('False Positive Rate (FPR)')
+axes[1].set_ylabel('True Positive Rate (Recall / TPR)')
+axes[1].legend(loc='lower right', fontsize=8.5)
 axes[1].grid(alpha=0.3)
 
 plt.tight_layout()

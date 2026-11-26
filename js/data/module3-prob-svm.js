@@ -24,10 +24,14 @@ window.COURSE_MODULES.push(
             $$\hat{y} = \arg\max_{c \in \mathcal{C}} P(y=c) \prod_{j=1}^d P(x_j \mid y=c) = \arg\max_{c \in \mathcal{C}} \left[\log P(y=c) + \sum_{j=1}^d \log P(x_j \mid y=c)\right]$$
           </div>
           <ul>
-            <li><strong>Gaussian Naive Bayes:</strong> Dùng cho dữ liệu số thực liên tục, giả sử $x_j \mid y=c \sim \mathcal{N}(\mu_{cj}, \sigma_{cj}^2)$.</li>
+            <li><strong>Gaussian Naive Bayes (dữ liệu số thực liên tục):</strong> Giả sử $x_i \mid y=c \sim \mathcal{N}(\mu_{c,i}, \sigma_{c,i}^2)$, hàm mật độ xác suất và các ước lượng trung bình, phương sai theo lớp là:
+              $$P(x_i \mid y = c) = \frac{1}{\sqrt{2\pi \sigma_{c,i}^2}} \exp\left(-\frac{(x_i - \mu_{c,i})^2}{2\sigma_{c,i}^2}\right), \qquad \hat{\mu}_{c,i} = \frac{1}{N_c}\sum_{y_k = c} x_{k,i}, \quad \hat{\sigma}_{c,i}^2 = \frac{1}{N_c}\sum_{y_k = c}(x_{k,i} - \hat{\mu}_{c,i})^2$$
+            </li>
             <li><strong>Multinomial Naive Bayes:</strong> Mô hình hóa số lần xuất hiện từ (tần suất từ Bag-of-Words) trong văn bản / lọc Email Spam.</li>
-            <li><strong>Bernoulli Naive Bayes:</strong> Mỗi đặc trưng là biến nhị phân $x_j \in \{0, 1\}$ biểu thị một từ khóa có mặt hay vắng mặt trong email (tính cả xác suất từ không xuất hiện $1 - p_{cj}$).</li>
-            <li><strong>Làm trơn Laplace (Additive Smoothing):</strong> Nếu một từ $w_k$ trong email kiểm thử chưa từng xuất hiện ở lớp $c$ lúc huấn luyện ($N_{ck} = 0$), tích xác suất sẽ sập về $0$. Ta cộng thêm hệ số làm trơn $\alpha > 0$ ($\alpha = 1$ là Laplace smoothing, $|V|$ là kích thước từ điển):</li>
+            <li><strong>Bernoulli Naive Bayes:</strong> Mỗi đặc trưng là biến nhị phân $x_j \in \{0, 1\}$ biểu thị từ khóa có mặt hay vắng mặt trong văn bản (tính cả xác suất vắng mặt):
+              $$P(x \mid y = c) = \prod_{j=1}^d p_{cj}^{x_j}(1 - p_{cj})^{1 - x_j}, \qquad p_{cj} = \frac{N_{cj}^{\text{doc}} + \alpha}{N_c^{\text{doc}} + 2\alpha}$$
+            </li>
+            <li><strong>Làm trơn Laplace (Additive Smoothing):</strong> Nếu một từ $w_k$ trong email kiểm thử chưa từng xuất hiện ở lớp $c$ lúc huấn luyện ($N_{ck} = 0$), tích xác suất sẽ sập về $0$. Ta cộng thêm hệ số làm trơn $\alpha > 0$ ($\alpha = 1$ là Laplace smoothing, $|V|$ hay $d$ là kích thước từ điển):</li>
           </ul>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
             $$P(w_k \mid y=c) = \frac{N_{ck} + \alpha}{\sum_{v=1}^{|V|} N_{cv} + \alpha |V|}$$
@@ -47,18 +51,35 @@ window.COURSE_MODULES.push(
             $$\min_{w, b, \xi} \frac{1}{2}\|w\|_2^2 + C \sum_{i=1}^N \xi_i \quad \text{s.t.} \quad y_i(w^T x_i + b) \ge 1 - \xi_i, \; \xi_i \ge 0$$
           </div>
           <p>
-            <strong>Ý nghĩa tham số $C$:</strong> Bài toán trên tương đương tối ưu hàm <em>Hinge Loss</em> $\max(0, 1 - y_i(w^T x_i + b))$. Khi $C$ rất lớn, mô hình phạt lỗi cực nặng $\rightarrow$ lề hẹp, dễ <em>Overfitting</em>; khi $C$ nhỏ, mô hình ưu tiên lề rộng mượt mà hơn và chấp nhận một vài điểm ngoại lai.
+            <strong>Ý nghĩa tham số $C$ &amp; Hinge Loss:</strong> Bài toán trên tương đương tối ưu dạng không ràng buộc với hàm <em>Hinge Loss</em> $\ell_{\text{hinge}} = \max\big(0, 1 - y_i(w^T x_i + b)\big)$:
+            $$\min_{w, b} \frac{1}{2}\|w\|_2^2 + C \sum_{i=1}^N \max\big(0, 1 - y_i(w^T x_i + b)\big)$$
+            Khi $C$ rất lớn, mô hình phạt lỗi cực nặng $\rightarrow$ lề hẹp, dễ <em>Overfitting</em>; khi $C$ nhỏ, mô hình ưu tiên lề rộng mượt mà hơn và chấp nhận một vài điểm ngoại lai.
           </p>
 
-          <h3>3. Bài toán Đối ngẫu & Thủ thuật Nhân (Kernel Trick)</h3>
+          <h3>3. Bài toán Đối ngẫu (Dual SVM) &amp; Thủ thuật Nhân (Kernel Trick)</h3>
           <p>
-            Chuyển sang bài toán đối ngẫu Lagrange theo nhân tử $\alpha_i$, hàm quyết định chỉ phụ thuộc vào tích vô hướng giữa các điểm dữ liệu: $f(x) = \text{sign}\left(\sum_{i \in \mathcal{SV}} \alpha_i y_i K(x_i, x) + b\right)$. Khi dữ liệu phi tuyến không tách được ở không gian gốc, <strong>Kernel Trick</strong> tính trực tiếp tích vô hướng $K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$ trong không gian đặc trưng chiều rất cao (thậm chí vô hạn chiều với RBF) mà không cần tính $\phi(x)$:
+            Chuyển sang bài toán đối ngẫu Lagrange theo nhân tử $\alpha_i \ge 0$, ta giải bài toán quy hoạch toàn phương (QP):
+          </p>
+          <div class="math-card bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            $$\max_{\alpha} \sum_{i=1}^N \alpha_i - \frac{1}{2}\sum_{i=1}^N \sum_{j=1}^N \alpha_i \alpha_j y_i y_j K(x_i, x_j) \quad \text{s.t.} \quad 0 \le \alpha_i \le C, \;\sum_{i=1}^N \alpha_i y_i = 0$$
+            $$w = \sum_{i \in \mathcal{SV}} \alpha_i y_i x_i \text{ (Linear)}, \qquad f(x) = \text{sign}\left(\sum_{i \in \mathcal{SV}} \alpha_i y_i K(x_i, x) + b\right)$$
+          </div>
+          <p>
+            Theo điều kiện KKT: điểm có $\alpha_i = 0$ nằm ngoài lề đúng; điểm có $0 &lt; \alpha_i &lt; C$ nằm <em>ngay trên biên</em> $y_i(w^T x_i + b) = 1$; điểm có $\alpha_i = C$ vi phạm vào trong lề ($\xi_i &gt; 0$). Khi dữ liệu phi tuyến không tách được ở không gian gốc, <strong>Kernel Trick</strong> tính trực tiếp tích vô hướng $K(x_i, x_j) = \phi(x_i)^T \phi(x_j)$ trong không gian đặc trưng chiều cao mà không cần tính tường minh $\phi(x)$:
           </p>
           <ul>
             <li><strong>Linear Kernel:</strong> $K(x_i, x_j) = x_i^T x_j$ (nhanh, hiệu quả cho dữ liệu văn bản nhiều chiều).</li>
             <li><strong>Polynomial Kernel:</strong> $K(x_i, x_j) = (\gamma x_i^T x_j + r)^d$ (biên quyết định đa thức bậc $d$).</li>
             <li><strong>RBF / Gaussian Kernel:</strong> $K(x_i, x_j) = \exp\big(-\gamma \|x_i - x_j\|_2^2\big)$ (phổ biến nhất cho dữ liệu phi tuyến phức tạp; $\gamma$ lớn tạo biên bao chặt quanh từng điểm, $\gamma$ nhỏ tạo biên trơn rộng).</li>
           </ul>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Lọc văn bản Spam (Multinomial Naive Bayes):</strong> Cho bảng tần suất từ trong các lớp Spam/Ham và câu mới, tính xác suất hậu nghiệm có dùng làm trơn Laplace ($\alpha = 1$).</li>
+              <li><strong>Dạng 2 — Phân loại dữ liệu liên tục (Gaussian Naive Bayes):</strong> Cho trung bình $\mu_{c,i}$ và phương sai $\sigma_{c,i}^2$ của từng đặc trưng theo lớp, áp dụng công thức mật độ chuẩn để dự đoán lớp mẫu mới.</li>
+              <li><strong>Dạng 3 — Siêu phẳng &amp; Margin của SVM:</strong> Cho $3$–$4$ điểm 2D thuộc 2 lớp, xác định các Support Vectors, vector pháp tuyến $w$, bias $b$ và độ rộng lề $\frac{2}{\|w\|_2}$.</li>
+            </ul>
+          </div>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-3"></div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
             <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
@@ -147,6 +168,42 @@ margin = 2.0 / np.linalg.norm(w)
 print("Trọng số w =", np.round(w, 4), ", b =", np.round(b, 4))
 print("Các Support Vectors:\n", clf.support_vectors_)
 print(f"Độ rộng Margin = {margin:.4f} (2*sqrt(2) = {2*np.sqrt(2):.4f})")`
+          },
+          {
+            title: 'Bài tập 3.3: Phân loại Dữ liệu Liên tục bằng Gaussian Naive Bayes',
+            problemHtml: String.raw`
+              Bài toán phân loại 2 lớp cân bằng $P(y=0) = P(y=1) = 0.5$ với $2$ đặc trưng số thực độc lập có điều kiện:
+              <ul class="mt-1">
+                <li><strong>Lớp $y=0$:</strong> $x_1 \mid (y=0) \sim \mathcal{N}(\mu=2, \sigma^2=1)$ và $x_2 \mid (y=0) \sim \mathcal{N}(\mu=3, \sigma^2=1)$.</li>
+                <li><strong>Lớp $y=1$:</strong> $x_1 \mid (y=1) \sim \mathcal{N}(\mu=5, \sigma^2=1)$ và $x_2 \mid (y=1) \sim \mathcal{N}(\mu=6, \sigma^2=4)$.</li>
+              </ul>
+              Áp dụng công thức mật độ Gaussian Naive Bayes, hãy tính xác suất hậu nghiệm $P(y=0 \mid x)$ và phân loại điểm $x = (3, 4)$.
+            `,
+            solutionHtml: String.raw`
+              <p><strong>Bước 1 — Tính mật độ có điều kiện cho lớp $y=0$:</strong></p>
+              $$P(x_1=3 \mid y=0) = \frac{1}{\sqrt{2\pi(1)}}e^{-\frac{(3-2)^2}{2}} = \frac{1}{\sqrt{2\pi}}e^{-0.5} \approx 0.24197$$
+              $$P(x_2=4 \mid y=0) = \frac{1}{\sqrt{2\pi(1)}}e^{-\frac{(4-3)^2}{2}} \approx 0.24197 \implies S_0 = 0.5 \times 0.24197^2 \approx \mathbf{0.029275}$$
+              <p><strong>Bước 2 — Tính mật độ có điều kiện cho lớp $y=1$:</strong></p>
+              $$P(x_1=3 \mid y=1) = \frac{1}{\sqrt{2\pi(1)}}e^{-\frac{(3-5)^2}{2}} = \frac{1}{\sqrt{2\pi}}e^{-2} \approx 0.05399$$
+              $$P(x_2=4 \mid y=1) = \frac{1}{\sqrt{2\pi(4)}}e^{-\frac{(4-6)^2}{8}} = \frac{1}{2\sqrt{2\pi}}e^{-0.5} \approx 0.12099 \implies S_1 = 0.5 \times 0.05399 \times 0.12099 \approx \mathbf{0.003266}$$
+              <p><strong>Bước 3 — Chuẩn hóa xác suất hậu nghiệm:</strong></p>
+              $$P(y=0 \mid x) = \frac{0.029275}{0.029275 + 0.003266} \approx \mathbf{89.96\%}, \qquad P(y=1 \mid x) \approx \mathbf{10.04\%}$$
+              <p>Kết luận: Mẫu $x = (3, 4)$ được phân loại thuộc <strong>Lớp $0$</strong>.</p>
+            `,
+            verifyCode: String.raw`import math
+
+def gaussian_pdf(x, mu, var):
+    return (1.0 / math.sqrt(2.0 * math.pi * var)) * math.exp(-((x - mu) ** 2) / (2.0 * var))
+
+x1, x2 = 3.0, 4.0
+s0 = 0.5 * gaussian_pdf(x1, 2.0, 1.0) * gaussian_pdf(x2, 3.0, 1.0)
+s1 = 0.5 * gaussian_pdf(x1, 5.0, 1.0) * gaussian_pdf(x2, 6.0, 4.0)
+
+p0 = s0 / (s0 + s1)
+p1 = s1 / (s0 + s1)
+print(f"Điểm hợp lý S0 = {s0:.6f} | S1 = {s1:.6f}")
+print(f"P(y=0 | x) = {p0*100:.2f}% | P(y=1 | x) = {p1*100:.2f}%")
+print("Kết luận phân loại:", "Lớp 0" if p0 > p1 else "Lớp 1")`
           }
         ],
         quiz: [

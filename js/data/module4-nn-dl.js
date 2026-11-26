@@ -21,49 +21,66 @@ window.COURSE_MODULES.push(
             <strong>Perceptron</strong> là mô hình đơn nơ-ron tuyến tính $\hat{y} = \text{sign}(w^T x + b)$. Thuật toán học <strong>PLA (Perceptron Learning Algorithm)</strong> cập nhật $w \leftarrow w + \eta y_i x_i$ mỗi khi gặp điểm bị phân loại sai ($y_i(w^T x_i + b) \le 0$). Định lý hội tụ Perceptron đảm bảo PLA dừng sau hữu hạn bước <em>khi và chỉ khi dữ liệu tách biệt tuyến tính</em>.
           </p>
           <p>
-            <strong>Giới hạn XOR:</strong> Cổng logic XOR có $(0,0)\to 0, (1,1)\to 0$ nhưng $(0,1)\to 1, (1,0)\to 1$ nằm chéo nhau nên <em>không tồn tại bất kỳ đường thẳng đơn nào</em> tách đôi hai lớp. Khắc phục điều này đòi hỏi xếp chồng nhiều tầng ẩn có hàm kích hoạt phi tuyến — hình thành <strong>Multi-Layer Perceptron (MLP)</strong>!
+            <strong>Giới hạn XOR (Chứng minh đại số):</strong> Cổng logic XOR có $(0,0)\to 0, (1,1)\to 0$ nhưng $(0,1)\to 1, (1,0)\to 1$. Nếu một Perceptron đơn tầng $w_1 x_1 + w_2 x_2 + b$ phân loại đúng cả $4$ điểm thì phải thỏa đồng thời:
+          </p>
+          <div class="math-card bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700">
+            $$(0,0): \; b &lt; 0, \qquad (0,1): \; w_2 + b \ge 0, \qquad (1,0): \; w_1 + b \ge 0 \implies w_1 + w_2 + 2b \ge 0 \implies w_1 + w_2 + b \ge -b &gt; 0$$
+          </div>
+          <p>
+            Điều này <strong>mâu thuẫn trực tiếp</strong> với điều kiện của $(1,1)$ là $w_1 + w_2 + b &lt; 0$! Khắc phục giới hạn này đòi hỏi xếp chồng nhiều tầng ẩn có hàm kích hoạt phi tuyến — hình thành <strong>Multi-Layer Perceptron (MLP)</strong>.
           </p>
 
-          <h3>2. Mạng Đa tầng (MLP), Hàm Kích hoạt & Lan truyền Ngược (Backpropagation)</h3>
+          <h3>2. Mạng Đa tầng (MLP), Hàm Kích hoạt &amp; Lan truyền Ngược (Backpropagation)</h3>
           <ul>
-            <li><strong>Các hàm kích hoạt (Activation Functions) phổ biến:</strong>
+            <li><strong>Các hàm kích hoạt (Activation Functions) &amp; Đạo hàm:</strong>
               <ul>
-                <li><strong>Sigmoid:</strong> $\sigma(z) = \frac{1}{1+e^{-z}} \in (0,1)$, đạo hàm cực đại chỉ bằng $0.25$ nên khi nhân chuỗi qua nhiều tầng gây <em>Triệt tiêu đạo hàm (Vanishing Gradient)</em>.</li>
-                <li><strong>Tanh:</strong> $\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}} \in (-1, 1)$, đối xứng quanh $0$ (zero-centered) giúp hội tụ tốt hơn Sigmoid nhưng vẫn bão hòa ở hai đầu.</li>
-                <li><strong>ReLU (Rectified Linear Unit):</strong> $\text{ReLU}(z) = \max(0, z)$ có đạo hàm bằng $1$ với mọi $z > 0$, tính toán siêu nhẹ và giải quyết hiệu quả Vanishing Gradient cho mạng sâu.</li>
+                <li><strong>Sigmoid:</strong> $\sigma(z) = \frac{1}{1+e^{-z}} \in (0,1)$, đạo hàm $\sigma'(z) = \sigma(z)(1-\sigma(z)) \le 0.25$ nên khi nhân chuỗi qua nhiều tầng gây <em>Triệt tiêu đạo hàm (Vanishing Gradient)</em>.</li>
+                <li><strong>Tanh:</strong> $\tanh(z) = \frac{e^z - e^{-z}}{e^z + e^{-z}} \in (-1, 1)$, $\tanh'(z) = 1 - \tanh^2(z)$, đối xứng quanh $0$ giúp hội tụ tốt hơn Sigmoid nhưng vẫn bão hòa ở hai đầu.</li>
+                <li><strong>ReLU &amp; Leaky ReLU:</strong> $\text{ReLU}(z) = \max(0, z)$ có $\text{ReLU}'(z) = \mathbb{I}(z &gt; 0)$ giải quyết hiệu quả Vanishing Gradient; $\text{Leaky ReLU}(z) = \max(\alpha z, z)$ ($\alpha \approx 0.01$) khắc phục tình trạng <em>Dying ReLU</em>.</li>
                 <li><strong>Softmax:</strong> Đặt ở tầng cuối cùng cho bài toán phân loại đa lớp.</li>
               </ul>
             </li>
-            <li><strong>Lan truyền tiến (Forward) & Lan truyền ngược (Backpropagation):</strong> Với tầng $l \in \{1, \dots, L\}$ trên mini-batch $N$ mẫu và hàm mất mát trung bình $\mathcal{L}$ (ví dụ Softmax/Sigmoid + Cross-Entropy), đặt ma trận độ nhạy lỗi $\delta^{[l]} = N\frac{\partial \mathcal{L}}{\partial Z^{[l]}}$:</li>
+            <li><strong>Lan truyền tiến (Forward) &amp; Lan truyền ngược (Backpropagation) tổng quát:</strong> Với mỗi tầng $l \in \{1, \dots, L\}$, hàm kích hoạt $f$ và hàm mất mát bất kỳ $C$:</li>
           </ul>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
-            $$Z^{[l]} = W^{[l]} A^{[l-1]} + b^{[l]}, \qquad A^{[l]} = g^{[l]}\big(Z^{[l]}\big)$$
-            $$\delta^{[L]} = \hat{Y} - Y, \qquad \delta^{[l]} = \Big((W^{[l+1]})^T \delta^{[l+1]}\Big) \odot g'^{[l]}\big(Z^{[l]}\big), \qquad \frac{\partial \mathcal{L}}{\partial W^{[l]}} = \frac{1}{N}\delta^{[l]} (A^{[l-1]})^T, \qquad \frac{\partial \mathcal{L}}{\partial b^{[l]}} = \frac{1}{N}\sum_{i=1}^N \delta_i^{[l]}$$
+            $$z^{[l]} = W^{[l]} a^{[l-1]} + b^{[l]}, \qquad a^{[l]} = f^{[l]}\big(z^{[l]}\big)$$
+            $$\delta^{[L]} = \nabla_{a^{[L]}} C \odot f'^{[L]}\big(z^{[L]}\big), \qquad \delta^{[l]} = \Big((W^{[l+1]})^T \delta^{[l+1]}\Big) \odot f'^{[l]}\big(z^{[l]}\big), \qquad \frac{\partial C}{\partial W^{[l]}} = \delta^{[l]} (a^{[l-1]})^T, \qquad \frac{\partial C}{\partial b^{[l]}} = \delta^{[l]}$$
           </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
+            Trường hợp riêng với hàm mất mát Cross-Entropy trung bình trên mini-batch $N$ mẫu kết hợp Sigmoid/Softmax ở tầng cuối, $\delta^{[L]}$ rút gọn đẹp thành $\hat{Y} - Y$ và gradient theo $W^{[l]}$ chia thêm cho $N$.
+          </p>
 
-          <h3>3. Huấn luyện Mạng Sâu (DNN) & Mạng Tích chập (CNN)</h3>
+          <h3>3. Huấn luyện Mạng Sâu (DNN) &amp; Mạng Tích chập (CNN)</h3>
           <ul>
-            <li><strong>Batch Normalization & Dropout:</strong>
+            <li><strong>Batch Normalization &amp; Dropout:</strong>
               <ul>
                 <li><strong>BatchNorm:</strong> Chuẩn hóa đầu ra từng mini-batch $\hat{z} = \frac{z - \mu_B}{\sqrt{\sigma_B^2 + \epsilon}}$ rồi dịch-co $y = \gamma \hat{z} + \beta$, giúp ổn định phân phối kích hoạt, cho phép dùng learning rate lớn hơn và giảm phụ thuộc vào khởi tạo trọng số.</li>
                 <li><strong>Dropout:</strong> Ngẫu nhiên tắt một tỷ lệ $p$ nơ-ron trong lúc huấn luyện, buộc mạng học các biểu diễn dư thừa bền vững (tương đương trung bình hóa tổ hợp rất nhiều mạng con), chống Overfitting mạnh mẽ.</li>
               </ul>
             </li>
-            <li><strong>Kiến trúc CNN (Convolutional Neural Networks):</strong> Khai thác tính <em>kết nối cục bộ</em> và <em>chia sẻ trọng số (weight sharing)</em> của bộ lọc (Kernel) kích thước $K \times K$ trượt với bước nhảy <strong>Stride $S$</strong> và đệm viền <strong>Padding $P$</strong>, theo sau bởi <strong>Pooling</strong> (Max/Avg Pool giảm kích thước & tăng tính bất biến dịch chuyển):</li>
+            <li><strong>Kiến trúc CNN (Convolutional Neural Networks):</strong> Bộ lọc kích thước $k_h \times k_w$ trượt với bước nhảy <strong>Stride $s$</strong> và đệm viền <strong>Padding $p$</strong>, theo sau bởi <strong>Pooling</strong>:</li>
           </ul>
           <div class="math-card bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
-            $$H_{\text{out}} = \left\lfloor \frac{H_{\text{in}} - K + 2P}{S} \right\rfloor + 1, \qquad \text{Số tham số tầng Conv} = (K \times K \times C_{\text{in}} + 1) \times C_{\text{out}}$$
+            $$H_{\text{out}} = \left\lfloor \frac{H_{\text{in}} + 2p - k_h}{s} \right\rfloor + 1, \quad W_{\text{out}} = \left\lfloor \frac{W_{\text{in}} + 2p - k_w}{s} \right\rfloor + 1, \qquad \text{Params}_{\text{Conv}} = (k_w \times k_h \times C_{\text{in}} + 1) \times C_{\text{out}}$$
           </div>
           <ul>
-            <li><strong>Các cột mốc kiến trúc CNN & Phát hiện vật thể (Object Detection):</strong>
+            <li><strong>Các cột mốc kiến trúc CNN &amp; Phát hiện vật thể (Object Detection):</strong>
               <ul>
                 <li><strong>AlexNet (2012):</strong> Tiên phong dùng ReLU, Dropout và huấn luyện GPU trên ImageNet, mở ra bùng nổ Deep Learning.</li>
-                <li><strong>ResNet (2015):</strong> Giới thiệu <strong>Kết nối tắt (Skip / Residual Connection)</strong> $y = \mathcal{F}(x) + x$, tạo đường cao tốc cho đạo hàm truyền ngược trực tiếp qua hơn 100 tầng mà không bị suy thoái.</li>
+                <li><strong>ResNet (2015):</strong> Giới thiệu <strong>Kết nối tắt (Skip / Residual Connection)</strong> $H(x) = \mathcal{F}(x) + x$, khi đạo hàm ngược $\frac{\partial \mathcal{L}}{\partial x} = \frac{\partial \mathcal{L}}{\partial H}\left(\frac{\partial \mathcal{F}}{\partial x} + I\right)$ luôn giữ thành phần đơn vị $I$ bảo toàn gradient qua hơn 100 tầng.</li>
                 <li><strong>Họ R-CNN (R-CNN, Fast R-CNN, Faster R-CNN):</strong> Kiến trúc <em>2 giai đoạn (Two-stage)</em> — đề xuất vùng ứng viên (Region Proposals / RPN) trước rồi phân loại và tinh chỉnh tọa độ Bounding Box, ưu thế độ chính xác cao.</li>
                 <li><strong>YOLO (You Only Look Once):</strong> Kiến trúc <em>1 giai đoạn (One-stage)</em> — chia ảnh thành lưới $S \times S$ và dự đoán đồng thời tọa độ hộp giới hạn $(x, y, w, h)$ cùng xác suất lớp trong một lần đọc ảnh duy nhất, đạt tốc độ xử lý thời gian thực (real-time FPS cao).</li>
               </ul>
             </li>
           </ul>
+          <div class="my-5 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/80 dark:bg-surface-900/70">
+            <h4 class="text-xs font-mono font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2">Các dạng bài tập &amp; Cách ra đề thường gặp</h4>
+            <ul class="!mb-0 text-sm space-y-1">
+              <li><strong>Dạng 1 — Lan truyền tiến MLP 2 tầng:</strong> Cho $W^{[1]}, b^{[1]}, W^{[2]}, b^{[2]}$ và đầu vào $x$, tính lần lượt $z^{[1]}, a^{[1]}, z^{[2]}, a^{[2]}$ với ReLU / Sigmoid.</li>
+              <li><strong>Dạng 2 — Giải bài toán XOR bằng MLP:</strong> Thiết kế trọng số 2 tầng ẩn (Step hoặc ReLU) để tách dữ liệu XOR phi tuyến.</li>
+              <li><strong>Dạng 3 — Kích thước Feature Map &amp; Tham số CNN:</strong> Cho ảnh đầu vào đi qua chuỗi các tầng Conv2D ($k, p, s, C_{\text{out}}$) và MaxPool, tính kích thước tensor ra và tổng tham số huấn luyện.</li>
+            </ul>
+          </div>
           <div class="interactive-lab-mount my-6" data-interactive-lab="module-4"></div>
           <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
             <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
@@ -126,33 +143,74 @@ for x_i, r_i, yp, yt in zip(X, np.c_[r1, r2], y_pred_relu, y_xor):
     print(f"Input {x_i.astype(int)} -> h_relu={r_i.astype(int)} -> Dự đoán = {yp} (Thực: {yt})")`
           },
           {
-            title: 'Bài tập 4.2: Tính Kích thước Feature Map & Số lượng Tham số tầng CNN',
+            title: 'Bài tập 4.2: Tính Kích thước Feature Map & Số lượng Tham số chuỗi tầng CNN',
             problemHtml: String.raw`
-              Ảnh màu RGB kích thước $32 \times 32 \times 3$ đi qua:
+              Ảnh màu RGB kích thước $32 \times 32 \times 3$ đi tuần tự qua 4 tầng:
               <ol class="list-decimal pl-5 mt-2 space-y-1">
-                <li><strong>Tầng Conv1:</strong> $16$ bộ lọc kích thước $3 \times 3$, Padding $P = 1$, Stride $S = 1$ (có dùng bias).</li>
+                <li><strong>Tầng Conv1:</strong> $32$ bộ lọc kích thước $3 \times 3$, Padding $P = 1$, Stride $S = 1$ (có dùng bias).</li>
                 <li><strong>Tầng MaxPool1:</strong> cửa sổ $2 \times 2$, Stride $S = 2$, Padding $P = 0$.</li>
+                <li><strong>Tầng Conv2:</strong> $32$ bộ lọc kích thước $3 \times 3$, Padding $P = 1$, Stride $S = 1$ (có dùng bias).</li>
+                <li><strong>Tầng MaxPool2:</strong> cửa sổ $2 \times 2$, Stride $S = 2$, Padding $P = 0$.</li>
               </ol>
-              Tính kích thước Tensor đầu ra sau mỗi tầng và tổng số tham số huấn luyện của hai tầng này.
+              Tính kích thước Tensor đầu ra sau mỗi tầng và tổng số tham số huấn luyện của toàn bộ mạng trích xuất trên.
             `,
             solutionHtml: String.raw`
               <p><strong>1. Sau tầng Conv1:</strong></p>
-              $$H_{\text{out}} = W_{\text{out}} = \left\lfloor \frac{32 - 3 + 2(1)}{1} \right\rfloor + 1 = 32 \implies \text{Kích thước: } 32 \times 32 \times 16$$
-              <p>Mỗi bộ lọc $3 \times 3$ xuyên qua cả $3$ kênh màu RGB cộng $1$ bias có $3 \times 3 \times 3 + 1 = 28$ tham số. Với $16$ bộ lọc: $28 \times 16 = \mathbf{448}$ tham số.</p>
-              <p><strong>2. Sau tầng MaxPool1:</strong></p>
-              $$H_{\text{pool}} = W_{\text{pool}} = \left\lfloor \frac{32 - 2 + 0}{2} \right\rfloor + 1 = 16 \implies \text{Kích thước: } 16 \times 16 \times 16$$
-              <p>Tầng Pooling chỉ lấy cực đại vùng cục bộ, <strong>không có tham số học ($0$ tham số)</strong>. Tổng cộng hai tầng có đúng <strong>$448$ tham số</strong> (nếu dùng Fully-Connected cho đầu ra tương đương sẽ tốn tới $32\times 32\times 3 \times (32\times 32\times 16) > 50$ triệu tham số!).</p>
+              $$H_1 = W_1 = \left\lfloor \frac{32 - 3 + 2(1)}{1} \right\rfloor + 1 = 32 \implies \text{Kích thước: } 32 \times 32 \times 32$$
+              <p>Số tham số Conv1: $(3 \times 3 \times 3 + 1) \times 32 = 28 \times 32 = \mathbf{896}$ tham số.</p>
+              <p><strong>2. Sau tầng MaxPool1:</strong> $H_2 = \left\lfloor \frac{32 - 2}{2} \right\rfloor + 1 = 16 \implies \mathbf{16 \times 16 \times 32}$ ($0$ tham số).</p>
+              <p><strong>3. Sau tầng Conv2:</strong> $H_3 = \left\lfloor \frac{16 - 3 + 2(1)}{1} \right\rfloor + 1 = 16 \implies \mathbf{16 \times 16 \times 32}$.</p>
+              <p>Số tham số Conv2 (lúc này $C_{\text{in}} = 32$): $(3 \times 3 \times 32 + 1) \times 32 = 289 \times 32 = \mathbf{9,248}$ tham số.</p>
+              <p><strong>4. Sau tầng MaxPool2:</strong> $H_4 = \left\lfloor \frac{16 - 2}{2} \right\rfloor + 1 = 8 \implies \mathbf{8 \times 8 \times 32}$ ($0$ tham số).</p>
+              <p><strong>Tổng số tham số toàn khối:</strong> $896 + 0 + 9,248 + 0 = \mathbf{10,144}$ tham số.</p>
             `,
             verifyCode: String.raw`def conv_out_dim(h_in, k, p, s):
     return (h_in - k + 2 * p) // s + 1
 
 H1 = conv_out_dim(32, k=3, p=1, s=1)
-params_conv1 = (3 * 3 * 3 + 1) * 16
+p_conv1 = (3 * 3 * 3 + 1) * 32
 H2 = conv_out_dim(H1, k=2, p=0, s=2)
+H3 = conv_out_dim(H2, k=3, p=1, s=1)
+p_conv2 = (3 * 3 * 32 + 1) * 32
+H4 = conv_out_dim(H3, k=2, p=0, s=2)
 
-print(f"Sau Conv1    : {H1} x {H1} x 16 | Số tham số huấn luyện = {params_conv1}")
-print(f"Sau MaxPool1 : {H2} x {H2} x 16 | Số tham số huấn luyện = 0")
-print(f"Tổng tham số : {params_conv1} (Tiết kiệm >100,000 lần so với kết nối đầy đủ!)")`
+print(f"Sau Conv1    : {H1} x {H1} x 32 | Tham số = {p_conv1}")
+print(f"Sau MaxPool1 : {H2} x {H2} x 32 | Tham số = 0")
+print(f"Sau Conv2    : {H3} x {H3} x 32 | Tham số = {p_conv2}")
+print(f"Sau MaxPool2 : {H4} x {H4} x 32 | Tham số = 0")
+print(f"Tổng tham số : {p_conv1 + p_conv2}")`
+          },
+          {
+            title: 'Bài tập 4.3: Lan truyền tiến (Forward Pass) qua Mạng MLP 2 tầng',
+            problemHtml: String.raw`
+              Cho mạng MLP 2 tầng với đầu vào $x = \begin{bmatrix} 1 \\ 2 \end{bmatrix}$. Tầng ẩn dùng hàm kích hoạt $\text{ReLU}(z) = \max(0, z)$ và tầng đầu ra dùng hàm $\text{Sigmoid}$ $\sigma(z) = \frac{1}{1+e^{-z}}$:
+              $$W^{[1]} = \begin{bmatrix} 0.5 & -0.5 \\ 1.0 & 0.5 \end{bmatrix}, \quad b^{[1]} = \begin{bmatrix} 0.2 \\ -1.0 \end{bmatrix}, \qquad W^{[2]} = \begin{bmatrix} 1.0 & 0.8 \end{bmatrix}, \quad b^{[2]} = -0.2$$
+              Hãy tính lần lượt $z^{[1]}, a^{[1]}, z^{[2]}$ và đầu ra dự đoán $\hat{y} = a^{[2]}$.
+            `,
+            solutionHtml: String.raw`
+              <p><strong>Bước 1 — Tầng ẩn $l = 1$ (ReLU):</strong></p>
+              $$z^{[1]} = W^{[1]}x + b^{[1]} = \begin{bmatrix} 0.5(1) - 0.5(2) + 0.2 \\ 1.0(1) + 0.5(2) - 1.0 \end{bmatrix} = \begin{bmatrix} -0.3 \\ 1.0 \end{bmatrix}$$
+              $$a^{[1]} = \text{ReLU}(z^{[1]}) = \begin{bmatrix} \max(0, -0.3) \\ \max(0, 1.0) \end{bmatrix} = \begin{bmatrix} 0.0 \\ 1.0 \end{bmatrix}$$
+              <p><strong>Bước 2 — Tầng đầu ra $l = 2$ (Sigmoid):</strong></p>
+              $$z^{[2]} = W^{[2]}a^{[1]} + b^{[2]} = 1.0(0.0) + 0.8(1.0) - 0.2 = 0.6$$
+              $$\hat{y} = a^{[2]} = \sigma(0.6) = \frac{1}{1 + e^{-0.6}} \approx \mathbf{0.6457}$$
+            `,
+            verifyCode: String.raw`import numpy as np
+
+x = np.array([1.0, 2.0])
+W1 = np.array([[0.5, -0.5], [1.0, 0.5]])
+b1 = np.array([0.2, -1.0])
+W2 = np.array([[1.0, 0.8]])
+b2 = np.array([-0.2])
+
+z1 = W1 @ x + b1
+a1 = np.maximum(0.0, z1)
+z2 = float((W2 @ a1 + b2)[0])
+a2 = 1.0 / (1.0 + np.exp(-z2))
+
+print("z^[1] =", z1)
+print("a^[1] (ReLU) =", a1)
+print(f"z^[2] = {z2:.4f} -> y_hat = sigma(z^[2]) = {a2:.4f}")`
           }
         ],
         quiz: [
@@ -328,6 +386,85 @@ for row, (k_name, kernel) in enumerate(kernels.items()):
 
     for col in range(4):
         axes[row, col].axis('off')
+
+plt.tight_layout()
+plt.show()`
+          },
+          {
+            title: 'Lab 4.3: Huấn luyện mạng MLP giải bài toán XOR (Backprop bằng NumPy)',
+            code: String.raw`# ==============================================================================
+# MODULE 4 - LAB 4.3: HUẤN LUYỆN MẠNG MLP GIẢI BÀI TOÁN XOR BẰNG BACKPROPAGATION
+# ==============================================================================
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=float)
+y = np.array([[0], [1], [1], [0]], dtype=float)
+
+def sigmoid(z):
+    return 1.0 / (1.0 + np.exp(-np.clip(z, -20, 20)))
+
+# Kiến trúc MLP: 2 -> 4 (Tanh) -> 1 (Sigmoid)
+W1 = np.random.randn(2, 4) * 0.9
+b1 = np.zeros((1, 4))
+W2 = np.random.randn(4, 1) * 0.9
+b2 = np.zeros((1, 1))
+
+lr = 0.45
+losses = []
+
+for epoch in range(1800):
+    # Forward Pass
+    z1 = X @ W1 + b1
+    a1 = np.tanh(z1)
+    z2 = a1 @ W2 + b2
+    y_hat = sigmoid(z2)
+
+    # Binary Cross-Entropy Loss
+    loss = -np.mean(y * np.log(y_hat + 1e-8) + (1 - y) * np.log(1 - y_hat + 1e-8))
+    losses.append(loss)
+
+    # Backpropagation
+    dz2 = (y_hat - y) / len(X)
+    dW2 = a1.T @ dz2
+    db2 = np.sum(dz2, axis=0, keepdims=True)
+    da1 = dz2 @ W2.T
+    dz1 = da1 * (1.0 - a1 ** 2)
+    dW1 = X.T @ dz1
+    db1 = np.sum(dz1, axis=0, keepdims=True)
+
+    W2 -= lr * dW2
+    b2 -= lr * db2
+    W1 -= lr * dW1
+    b1 -= lr * db1
+
+print("=== KẾT QUẢ MẠNG MLP HỌC CỔNG XOR SAU 1,800 EPOCHS ===")
+for xi, yi, yp in zip(X, y.ravel(), y_hat.ravel()):
+    print(f"Input {xi.astype(int)} -> Dự đoán P(XOR=1) = {yp:.4f} (Nhãn {int(yp >= 0.5)}) | Thực tế = {int(yi)}")
+
+# Trực quan hóa đường cong Loss & Biên quyết định phi tuyến giải XOR
+xx, yy = np.meshgrid(np.linspace(-0.3, 1.3, 180), np.linspace(-0.3, 1.3, 180))
+grid = np.c_[xx.ravel(), yy.ravel()]
+grid_pred = sigmoid(np.tanh(grid @ W1 + b1) @ W2 + b2).reshape(xx.shape)
+
+fig, axes = plt.subplots(1, 2, figsize=(11, 4.2))
+axes[0].plot(losses, color='#4f46e5', linewidth=2)
+axes[0].set_title('Đường cong BCE Loss (MLP 2-4-1)')
+axes[0].set_xlabel('Epoch')
+axes[0].set_ylabel('Binary Cross-Entropy')
+axes[0].grid(alpha=0.3)
+
+axes[1].contourf(xx, yy, grid_pred, levels=20, cmap='RdYlGn', alpha=0.6)
+axes[1].contour(xx, yy, grid_pred, levels=[0.5], colors='#0f172a', linewidths=2)
+axes[1].scatter(X[y.ravel()==0, 0], X[y.ravel()==0, 1], c='#ef4444', s=120, edgecolors='k', label='Lớp 0: (0,0), (1,1)')
+axes[1].scatter(X[y.ravel()==1, 0], X[y.ravel()==1, 1], c='#10b981', s=120, marker='^', edgecolors='k', label='Lớp 1: (0,1), (1,0)')
+axes[1].set_title('Biên quyết định Phi tuyến giải bài toán XOR')
+axes[1].set_xlabel('x1')
+axes[1].set_ylabel('x2')
+axes[1].legend(fontsize=8)
+axes[1].grid(alpha=0.25)
 
 plt.tight_layout()
 plt.show()`
