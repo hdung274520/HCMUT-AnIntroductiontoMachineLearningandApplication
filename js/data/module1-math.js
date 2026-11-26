@@ -39,7 +39,7 @@ window.COURSE_MODULES.push(
             $$X = U \Sigma V^T, \quad U \in \mathbb{R}^{N \times N}\text{ trực giao}, \; \Sigma \in \mathbb{R}^{N \times d}\text{ đường chéo } (\sigma_1 \ge \sigma_2 \ge \dots \ge 0), \; V \in \mathbb{R}^{d \times d}\text{ trực giao}$$
           </div>
           <p>
-            <strong>Liên hệ trực tiếp với PCA:</strong> Khi dữ liệu đã chuẩn hóa tâm $\tilde{X} = X - \mathbf{1}\mu^T = U \Sigma V^T$, ma trận hiệp phương sai thực nghiệm là $S = \frac{1}{N}\tilde{X}^T \tilde{X} = V \left(\frac{\Sigma^2}{N}\right) V^T$. Như vậy các cột của $V$ (vector kỳ dị phải) chính là các <em>thành phần chính (Principal Components)</em>!
+            <strong>Liên hệ trực tiếp với PCA:</strong> Khi dữ liệu đã chuẩn hóa tâm $\tilde{X} = X - \mathbf{1}\mu^T = U \Sigma V^T$, ma trận hiệp phương sai thực nghiệm là $S = \frac{1}{N}\tilde{X}^T \tilde{X} = V \left(\frac{\Sigma^T \Sigma}{N}\right) V^T$. Như vậy các cột của $V$ (vector kỳ dị phải) chính là các <em>thành phần chính (Principal Components)</em>!
           </p>
 
           <h3>3. Giải tích Ma trận: Gradient, Hessian & Quy tắc Chain Rule</h3>
@@ -67,6 +67,20 @@ window.COURSE_MODULES.push(
           <p class="text-xs text-slate-500 dark:text-slate-400">
             Lưu ý thực hành: Nếu $\eta$ quá nhỏ, thuật toán hội tụ rất chậm; nếu $\eta$ quá lớn ($\eta > \frac{2}{\lambda_{\max}(H)}$ với hàm bậc hai), chuỗi lặp sẽ dao động mạnh và phân kỳ ra vô cùng.
           </p>
+          <div class="interactive-lab-mount my-6" data-interactive-lab="module-1"></div>
+          <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="2">
+            <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+              <span>⚡ Kiểm tra nhanh hiểu bài</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white !mb-2.5">Giả sử hàm bậc hai lồi có trị riêng lớn nhất của ma trận Hessian là $\lambda_{\max}(H) = 5$. Giá trị tốc độ học $\eta$ nào sau đây sẽ làm thuật toán Gradient Descent bị <strong>phân kỳ</strong>?</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-qc-opt="0" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">A. $\eta = 0.15$</button>
+              <button type="button" data-qc-opt="1" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">B. $\eta = 0.35$</button>
+              <button type="button" data-qc-opt="2" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">C. $\eta = 0.50$</button>
+            </div>
+            <div class="qc-explain hidden">Ngưỡng ổn định của hàm bậc hai là $\eta_{\max} = \frac{2}{\lambda_{\max}(H)} = \frac{2}{5} = 0.40$. Chọn $\eta = 0.50 > 0.40$ sẽ khiến sai số khuếch đại qua từng bước và phân kỳ ra vô cùng.</div>
+            <div class="qc-feedback hidden mt-2.5 p-2.5 rounded-lg text-xs leading-relaxed"></div>
+          </div>
         `,
         exercises: [
           {
@@ -84,10 +98,10 @@ window.COURSE_MODULES.push(
               $$\nabla f(w) = \begin{bmatrix} \frac{\partial f}{\partial w_1} \\ \frac{\partial f}{\partial w_2} \end{bmatrix} = \begin{bmatrix} 4w_1 + 2w_2 - 6 \\ 2w_1 + 2w_2 - 4 \end{bmatrix}, \qquad H = \begin{bmatrix} 4 & 2 \\ 2 & 2 \end{bmatrix}$$
               <p>Xét các định thức con chính của $H$: $\Delta_1 = 4 > 0$ và $\det(H) = 4 \times 2 - 2^2 = 4 > 0$ (tiêu chuẩn Sylvester). Do đó $H \succ 0$ (xác định dương), suy ra $f(w)$ là <strong>hàm lồi chặt</strong>.</p>
               <p><strong>Bước 2 — Cực tiểu toàn cục:</strong> Giải hệ $4w_1 + 2w_2 = 6$ và $2w_1 + 2w_2 = 4$: trừ vế theo vế được $2w_1 = 2 \Rightarrow w_1^* = 1 \Rightarrow w_2^* = 1$. Giá trị nhỏ nhất $f(1, 1) = 0$.</p>
-              <p><strong>Bước 3 — Hai vòng lặp Gradient Descent ($\eta = 0.2$):</strong></p>
+              <p><strong>Bước 3 — Hai vòng lặp Gradient Descent ($\eta = 0.2$):</strong> (Lưu ý có thể viết $f(w_1,w_2) = (w_1 - 1)^2 + (w_1 + w_2 - 2)^2$)</p>
               <ul>
-                <li>Tại $w^{(0)} = [0, 0]^T$: $\nabla f(w^{(0)}) = [-6, -4]^T \Rightarrow w^{(1)} = \begin{bmatrix}0\\0\end{bmatrix} - 0.2\begin{bmatrix}-6\\-4\end{bmatrix} = \begin{bmatrix}1.2\\0.8\end{bmatrix}$, $f(w^{(1)}) = 0.08$.</li>
-                <li>Tại $w^{(1)} = [1.2, 0.8]^T$: $\nabla f(w^{(1)}) = [0.4, 0]^T \Rightarrow w^{(2)} = \begin{bmatrix}1.2\\0.8\end{bmatrix} - 0.2\begin{bmatrix}0.4\\0\end{bmatrix} = \begin{bmatrix}1.12\\0.80\end{bmatrix}$, $f(w^{(2)}) = 0.0488$.</li>
+                <li>Tại $w^{(0)} = [0, 0]^T$: $\nabla f(w^{(0)}) = [-6, -4]^T \Rightarrow w^{(1)} = \begin{bmatrix}0\\0\end{bmatrix} - 0.2\begin{bmatrix}-6\\-4\end{bmatrix} = \begin{bmatrix}1.2\\0.8\end{bmatrix}$, $f(w^{(1)}) = 0.2^2 + 0^2 = \mathbf{0.04}$.</li>
+                <li>Tại $w^{(1)} = [1.2, 0.8]^T$: $\nabla f(w^{(1)}) = [0.4, 0]^T \Rightarrow w^{(2)} = \begin{bmatrix}1.2\\0.8\end{bmatrix} - 0.2\begin{bmatrix}0.4\\0\end{bmatrix} = \begin{bmatrix}1.12\\0.80\end{bmatrix}$, $f(w^{(2)}) = 0.12^2 + (-0.08)^2 = \mathbf{0.0208}$.</li>
               </ul>
             `,
             verifyCode: String.raw`import numpy as np
@@ -126,7 +140,7 @@ for step in range(1, 15):
               $$\tilde{X} = \begin{bmatrix} -2 & -2 \\ 0 & 0 \\ 2 & 2 \end{bmatrix}$$
               <p><strong>Bước 2:</strong> Ma trận hiệp phương sai:</p>
               $$S = \frac{1}{3} \begin{bmatrix} -2 & 0 & 2 \\ -2 & 0 & 2 \end{bmatrix} \begin{bmatrix} -2 & -2 \\ 0 & 0 \\ 2 & 2 \end{bmatrix} = \frac{1}{3}\begin{bmatrix} 8 & 8 \\ 8 & 8 \end{bmatrix}$$
-              <p><strong>Bước 3:</strong> Hai trị riêng của $S$ là $\lambda_1 = \frac{16}{3}$ và $\lambda_2 = 0$. Vector riêng đơn vị ứng với $\lambda_1$ là $v_1 = \left[\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}}\right]^T \approx [0.7071, 0.7071]^T$, giữ trọn $100\%$ phương sai dữ liệu!</p>
+              <p><strong>Bước 3:</strong> Hai trị riêng của $S$ là $\lambda_1 = \frac{16}{3}$ và $\lambda_2 = 0$. Vector riêng đơn vị ứng với $\lambda_1$ (sai khác dấu $\pm 1$) là $v_1 = \pm\left[\frac{1}{\sqrt{2}}, \frac{1}{\sqrt{2}}\right]^T \approx \pm[0.7071, 0.7071]^T$, giữ trọn $100\%$ phương sai dữ liệu!</p>
             `,
             verifyCode: String.raw`import numpy as np
 

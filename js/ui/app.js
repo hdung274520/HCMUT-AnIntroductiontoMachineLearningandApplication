@@ -97,7 +97,7 @@ window.MLStudioApp = (function () {
             <button type="button" data-sidebar-module="${idx}"
                     class="w-full text-left px-3 py-2.5 rounded-lg border transition cursor-pointer flex items-start gap-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
                       isActive
-                        ? 'bg-white dark:bg-surface-800 border-slate-300 dark:border-slate-700/90 text-slate-900 dark:text-white shadow-xs'
+                        ? 'bg-white dark:bg-surface-800 border-slate-300 dark:border-slate-700/90 text-slate-900 dark:text-white shadow-sm'
                         : 'border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-surface-850 hover:text-slate-900 dark:hover:text-slate-200'
                     }">
               <span class="font-mono text-[11px] font-semibold mt-0.5 shrink-0 ${
@@ -156,7 +156,7 @@ window.MLStudioApp = (function () {
       const active = btn.dataset.modeSwitch === mode;
       btn.className = 'rail-nav-btn w-full flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-[13px] font-medium transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 ' + (
         active
-          ? 'bg-emerald-500/12 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 font-semibold'
+          ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 font-semibold'
           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-surface-850 border border-transparent'
       );
     });
@@ -165,7 +165,7 @@ window.MLStudioApp = (function () {
       const active = btn.dataset.modeSwitch === mode || (mode === 'split' && btn.dataset.modeSwitch === 'playground');
       btn.className = 'mobile-mode-btn px-2.5 py-1 rounded-md text-xs font-medium cursor-pointer transition ' + (
         active
-          ? 'bg-white dark:bg-surface-800 text-emerald-600 dark:text-emerald-400 shadow-xs'
+          ? 'bg-white dark:bg-surface-800 text-emerald-600 dark:text-emerald-400 shadow-sm'
           : 'text-slate-600 dark:text-slate-400'
       );
     });
@@ -206,6 +206,10 @@ window.MLStudioApp = (function () {
       if (quickSplitLabel) quickSplitLabel.textContent = 'Thu về chế độ đọc';
       setTimeout(() => EditorManager.refresh(), 30);
     }
+
+    setTimeout(() => {
+      if (window.TheoryInteractive) TheoryInteractive.redrawActive();
+    }, 45);
   }
 
   /**
@@ -214,6 +218,10 @@ window.MLStudioApp = (function () {
   function renderLeftPane() {
     const mod = getModules()[currentModuleIndex];
     if (!mod) return;
+
+    if (window.TheoryInteractive) {
+      TheoryInteractive.destroy();
+    }
 
     const hero = document.getElementById('moduleHeroCard');
     const body = document.getElementById('leftDynamicBody');
@@ -247,7 +255,7 @@ window.MLStudioApp = (function () {
       btn.setAttribute('aria-selected', String(isSelected));
       btn.className = 'subtab-btn px-3 py-1.5 rounded-md text-xs font-semibold transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 ' + (
         isSelected
-          ? 'bg-white dark:bg-surface-900 text-emerald-700 dark:text-emerald-400 shadow-xs'
+          ? 'bg-white dark:bg-surface-900 text-emerald-700 dark:text-emerald-400 shadow-sm'
           : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
       );
     });
@@ -306,7 +314,19 @@ window.MLStudioApp = (function () {
         </div>
       `;
     } else {
+      const answeredCount = mod.quiz.reduce((acc, _, qIdx) => acc + (quizUserAnswers[`${currentModuleIndex}-${qIdx}`] !== undefined ? 1 : 0), 0);
+      const correctCount = mod.quiz.reduce((acc, item, qIdx) => acc + (quizUserAnswers[`${currentModuleIndex}-${qIdx}`] === item.answer ? 1 : 0), 0);
+
       body.innerHTML = `
+        <div class="mb-4 p-3.5 rounded-xl bg-slate-50 dark:bg-surface-900 border border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-2 text-xs">
+          <div class="font-mono text-slate-700 dark:text-slate-300">
+            Tiến độ: <strong>${answeredCount}/${mod.quiz.length}</strong> câu • Đúng: <strong class="text-emerald-600 dark:text-emerald-400">${correctCount}/${mod.quiz.length}</strong>
+          </div>
+          <button type="button" data-reset-quiz="true"
+                  class="px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 hover:border-emerald-500/50 text-slate-700 dark:text-slate-200 font-semibold cursor-pointer transition">
+            Làm lại trắc nghiệm
+          </button>
+        </div>
         <div class="space-y-4">
           ${mod.quiz.map((item, qIdx) => {
             const key = `${currentModuleIndex}-${qIdx}`;
@@ -356,6 +376,10 @@ window.MLStudioApp = (function () {
     }
 
     renderMath(body);
+
+    if (currentSubtab === 'theory' && window.TheoryInteractive) {
+      TheoryInteractive.mount(mod.id, body);
+    }
   }
 
   function renderLabSelectorAndLoadDefault() {
@@ -499,6 +523,7 @@ window.MLStudioApp = (function () {
   function toggleTheme() {
     const isDark = document.documentElement.classList.toggle('dark');
     localStorage.setItem('ml_studio_theme', isDark ? 'dark' : 'light');
+    if (window.TheoryInteractive) TheoryInteractive.redrawActive();
   }
 
   function bindEvents() {
@@ -567,9 +592,20 @@ window.MLStudioApp = (function () {
       if (verifyBtn) {
         const exIdx = Number(verifyBtn.dataset.verifyEx);
         const ex = getModules()[currentModuleIndex].exercises[exIdx];
-        EditorManager.setCode(ex.verifyCode);
         setViewMode(window.innerWidth >= 1024 ? 'split' : 'playground');
-        showToast(`Đã nạp code kiểm chứng "${ex.title.split(':')[0]}"!`);
+        EditorManager.setCode(ex.verifyCode);
+        showToast(`Đang chạy code kiểm chứng "${ex.title.split(':')[0]}"...`);
+        runCurrentCode();
+        return;
+      }
+
+      const resetQuizBtn = e.target.closest('[data-reset-quiz]');
+      if (resetQuizBtn) {
+        const mod = getModules()[currentModuleIndex];
+        mod.quiz.forEach((_, qIdx) => {
+          delete quizUserAnswers[`${currentModuleIndex}-${qIdx}`];
+        });
+        renderLeftPane();
         return;
       }
 
@@ -652,6 +688,7 @@ window.MLStudioApp = (function () {
       } else if (currentViewMode === 'split') {
         setViewMode('playground');
       }
+      if (window.TheoryInteractive) TheoryInteractive.redrawActive();
     });
   }
 
@@ -664,7 +701,10 @@ window.MLStudioApp = (function () {
     }
 
     EditorManager.init('codeEditorTextarea', runCurrentCode);
-    SplitResizer.init(() => EditorManager.refresh());
+    SplitResizer.init(() => {
+      EditorManager.refresh();
+      if (window.TheoryInteractive) TheoryInteractive.redrawActive();
+    });
     PyodideRunner.onStatusChange(updatePyodideBadge);
 
     bindEvents();

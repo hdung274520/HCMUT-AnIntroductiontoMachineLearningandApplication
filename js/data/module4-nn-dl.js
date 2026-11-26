@@ -34,11 +34,11 @@ window.COURSE_MODULES.push(
                 <li><strong>Softmax:</strong> Đặt ở tầng cuối cùng cho bài toán phân loại đa lớp.</li>
               </ul>
             </li>
-            <li><strong>Lan truyền tiến (Forward) & Lan truyền ngược (Backpropagation):</strong> Với tầng $l \in \{1, \dots, L\}$:</li>
+            <li><strong>Lan truyền tiến (Forward) & Lan truyền ngược (Backpropagation):</strong> Với tầng $l \in \{1, \dots, L\}$ trên mini-batch $N$ mẫu và hàm mất mát trung bình $\mathcal{L}$ (ví dụ Softmax/Sigmoid + Cross-Entropy), đặt ma trận độ nhạy lỗi $\delta^{[l]} = N\frac{\partial \mathcal{L}}{\partial Z^{[l]}}$:</li>
           </ul>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
             $$Z^{[l]} = W^{[l]} A^{[l-1]} + b^{[l]}, \qquad A^{[l]} = g^{[l]}\big(Z^{[l]}\big)$$
-            $$\delta^{[L]} = \frac{\partial \mathcal{L}}{\partial Z^{[L]}} = \hat{Y} - Y, \qquad \delta^{[l]} = \Big((W^{[l+1]})^T \delta^{[l+1]}\Big) \odot g'^{[l]}\big(Z^{[l]}\big), \qquad \frac{\partial \mathcal{L}}{\partial W^{[l]}} = \frac{1}{N}\delta^{[l]} (A^{[l-1]})^T$$
+            $$\delta^{[L]} = \hat{Y} - Y, \qquad \delta^{[l]} = \Big((W^{[l+1]})^T \delta^{[l+1]}\Big) \odot g'^{[l]}\big(Z^{[l]}\big), \qquad \frac{\partial \mathcal{L}}{\partial W^{[l]}} = \frac{1}{N}\delta^{[l]} (A^{[l-1]})^T, \qquad \frac{\partial \mathcal{L}}{\partial b^{[l]}} = \frac{1}{N}\sum_{i=1}^N \delta_i^{[l]}$$
           </div>
 
           <h3>3. Huấn luyện Mạng Sâu (DNN) & Mạng Tích chập (CNN)</h3>
@@ -64,34 +64,66 @@ window.COURSE_MODULES.push(
               </ul>
             </li>
           </ul>
+          <div class="interactive-lab-mount my-6" data-interactive-lab="module-4"></div>
+          <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
+            <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+              <span>⚡ Kiểm tra nhanh hiểu bài</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white !mb-2.5">Tầng Conv2D có $8$ bộ lọc $3 \times 3$ ($P=0, S=1$, có bias) nhận ảnh RGB đầu vào kích thước $16 \times 16 \times 3$. Kích thước đầu ra và tổng số tham số của tầng là bao nhiêu?</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-qc-opt="0" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">A. $16 \times 16 \times 8$ và $80$ tham số</button>
+              <button type="button" data-qc-opt="1" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">B. $14 \times 14 \times 8$ và $224$ tham số</button>
+              <button type="button" data-qc-opt="2" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">C. $14 \times 14 \times 3$ và $216$ tham số</button>
+            </div>
+            <div class="qc-explain hidden">Chiều cao/rộng: $\lfloor(16 - 3 + 0)/1\rfloor + 1 = 14$, số kênh ra bằng số bộ lọc $C_{\text{out}} = 8$. Tổng tham số $= (3 \times 3 \times 3 + 1) \times 8 = 28 \times 8 = 224$.</div>
+            <div class="qc-feedback hidden mt-2.5 p-2.5 rounded-lg text-xs leading-relaxed"></div>
+          </div>
         `,
         exercises: [
           {
             title: 'Bài tập 4.1: Giải bài toán XOR bằng mạng MLP 2 tầng',
             problemHtml: String.raw`
-              Cho mạng MLP gồm 2 đầu vào $(x_1, x_2) \in \{0,1\}^2$, tầng ẩn gồm 2 nơ-ron dùng hàm kích hoạt bước nhảy (hoặc ReLU) biểu diễn cổng OR và NAND, ghép vào nơ-ron đầu ra. Hãy chỉ ra bộ trọng số giải chính xác bài toán XOR: $x_1 \oplus x_2 = (x_1 \lor x_2) \land \neg(x_1 \land x_2)$.
+              Cho mạng MLP gồm 2 đầu vào $(x_1, x_2) \in \{0,1\}^2$, tầng ẩn gồm 2 nơ-ron dùng <strong>hàm kích hoạt bước nhảy (Step function)</strong> $g(z) = \mathbb{I}(z \ge 0)$ biểu diễn cổng OR và NAND, ghép vào nơ-ron đầu ra.
+              <ol class="list-decimal pl-5 mt-2 space-y-1">
+                <li>Hãy chỉ ra bộ trọng số giải chính xác bài toán XOR: $x_1 \oplus x_2 = (x_1 \lor x_2) \land \neg(x_1 \land x_2)$.</li>
+                <li><em>Mở rộng:</em> Nếu thay hàm bước nhảy bằng hàm kích hoạt <strong>ReLU</strong> $\max(0, z)$ ở tầng ẩn, thiết kế một bộ trọng số thay thế biểu diễn chính xác phép XOR.</li>
+              </ol>
             `,
             solutionHtml: String.raw`
-              <p>Với hàm kích hoạt ngưỡng $g(z) = \mathbb{I}(z \ge 0)$:</p>
+              <p><strong>1. Với hàm kích hoạt bước nhảy $g(z) = \mathbb{I}(z \ge 0)$ (cổng OR &amp; NAND):</strong></p>
               <ul>
                 <li>Nơ-ron ẩn $h_1$ (cổng OR): $h_1 = g(x_1 + x_2 - 0.5)$. Cho $h_1 = 1$ khi ít nhất một biến bằng $1$.</li>
                 <li>Nơ-ron ẩn $h_2$ (cổng NAND): $h_2 = g(-x_1 - x_2 + 1.5)$. Cho $h_2 = 0$ chỉ khi cả hai biến bằng $1$.</li>
                 <li>Nơ-ron ra $\hat{y}$ (cổng AND của $h_1, h_2$): $\hat{y} = g(h_1 + h_2 - 1.5)$.</li>
               </ul>
-              <p>Kiểm tra cả 4 mẫu $(0,0)\to 0, (0,1)\to 1, (1,0)\to 1, (1,1)\to 0$ đều khớp $100\%$! Trong không gian ẩn $(h_1, h_2)$, dữ liệu đã trở thành khả tách tuyến tính.</p>
+              <p>Kiểm tra cả 4 mẫu: $(0,0)\to h=(0,1)\to 0$; $(0,1)\to h=(1,1)\to 1$; $(1,0)\to h=(1,1)\to 1$; $(1,1)\to h=(1,0)\to 0$. Trong không gian ẩn $(h_1, h_2)$, dữ liệu đã trở thành khả tách tuyến tính!</p>
+              <p><strong>2. Mở rộng với hàm kích hoạt $\text{ReLU}(z) = \max(0, z)$:</strong></p>
+              <p><em>Lưu ý:</em> Không thể giữ nguyên trọng số trên cho ReLU vì $\text{ReLU}$ không bị chặn về $\{0,1\}$. Một nghiệm chuẩn dùng ReLU là:</p>
+              $$h_1 = \text{ReLU}(x_1 + x_2), \qquad h_2 = \text{ReLU}(x_1 + x_2 - 1), \qquad \hat{y} = h_1 - 2h_2$$
+              <p>Kiểm tra: $(0,0)\to 0 - 0 = 0$; $(0,1)\text{ và }(1,0)\to 1 - 0 = 1$; $(1,1)\to 2 - 2(1) = 0$.</p>
             `,
             verifyCode: String.raw`import numpy as np
 
 X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=float)
 y_xor = np.array([0, 1, 1, 0])
 
+print("=== CÁCH 1: MẠNG STEP FUNCTION (CỔNG OR + NAND) ===")
 step = lambda z: (z >= 0).astype(int)
 h1 = step(X[:, 0] + X[:, 1] - 0.5)        # Cổng OR
 h2 = step(-X[:, 0] - X[:, 1] + 1.5)       # Cổng NAND
-y_pred = step(h1 + h2 - 1.5)              # Cổng AND(h1, h2)
+y_pred_step = step(h1 + h2 - 1.5)         # Cổng AND(h1, h2)
 
-for x_i, h_i, yp, yt in zip(X, np.c_[h1, h2], y_pred, y_xor):
-    print(f"Input {x_i.astype(int)} -> Không gian ẩn h={h_i} -> Dự đoán XOR = {yp} (Nhãn thực: {yt})")`
+for x_i, h_i, yp, yt in zip(X, np.c_[h1, h2], y_pred_step, y_xor):
+    print(f"Input {x_i.astype(int)} -> h_step={h_i} -> Dự đoán = {yp} (Thực: {yt})")
+
+print("\n=== CÁCH 2: MẠNG RELU HIỆN ĐẠI ===")
+relu = lambda z: np.maximum(0.0, z)
+r1 = relu(X[:, 0] + X[:, 1])
+r2 = relu(X[:, 0] + X[:, 1] - 1.0)
+y_pred_relu = (r1 - 2.0 * r2).astype(int)
+
+for x_i, r_i, yp, yt in zip(X, np.c_[r1, r2], y_pred_relu, y_xor):
+    print(f"Input {x_i.astype(int)} -> h_relu={r_i.astype(int)} -> Dự đoán = {yp} (Thực: {yt})")`
           },
           {
             title: 'Bài tập 4.2: Tính Kích thước Feature Map & Số lượng Tham số tầng CNN',

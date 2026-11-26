@@ -35,7 +35,7 @@ window.COURSE_MODULES.push(
 
           <h3>2. Support Vector Machine (SVM): Lề cực đại & Soft-Margin</h3>
           <p>
-            Với bài toán nhị phân $y_i \in \{-1, +1\}$, SVM tìm siêu phẳng $w^T x + b = 0$ sao cho khoảng cách từ siêu phẳng tới các điểm gần nhất của hai lớp — gọi là <strong>Độ rộng lề (Margin)</strong> $\gamma = \frac{2}{\|w\|_2}$ — đạt giá trị lớn nhất. Những điểm dữ liệu nằm ngay trên hai biên $y_i(w^T x_i + b) = 1$ được gọi là các <strong>Support Vectors</strong>.
+            Với bài toán nhị phân $y_i \in \{-1, +1\}$, SVM tìm siêu phẳng $w^T x + b = 0$ sao cho tổng khoảng cách giữa hai siêu phẳng biên song song $w^T x + b = \pm 1$ đi qua các điểm gần nhất của hai lớp — gọi là <strong>Độ rộng lề (Margin)</strong> $\gamma = \frac{2}{\|w\|_2}$ (mỗi phía cách siêu phẳng phân cách $\frac{1}{\|w\|_2}$) — đạt giá trị lớn nhất. Những điểm dữ liệu nằm ngay trên hai biên $y_i(w^T x_i + b) = 1$ được gọi là các <strong>Support Vectors</strong>.
           </p>
           <ul>
             <li><strong>Hard-Margin SVM</strong> (khi dữ liệu tách biệt tuyến tính tuyệt đối, không nhiễu):
@@ -59,6 +59,20 @@ window.COURSE_MODULES.push(
             <li><strong>Polynomial Kernel:</strong> $K(x_i, x_j) = (\gamma x_i^T x_j + r)^d$ (biên quyết định đa thức bậc $d$).</li>
             <li><strong>RBF / Gaussian Kernel:</strong> $K(x_i, x_j) = \exp\big(-\gamma \|x_i - x_j\|_2^2\big)$ (phổ biến nhất cho dữ liệu phi tuyến phức tạp; $\gamma$ lớn tạo biên bao chặt quanh từng điểm, $\gamma$ nhỏ tạo biên trơn rộng).</li>
           </ul>
+          <div class="interactive-lab-mount my-6" data-interactive-lab="module-3"></div>
+          <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
+            <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+              <span>⚡ Kiểm tra nhanh hiểu bài</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white !mb-2.5">Khi dùng SVM nhân RBF và tăng đồng thời cả $C$ lẫn $\gamma$ lên rất lớn, mô hình có xu hướng thay đổi như thế nào?</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-qc-opt="0" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">A. Biên trở nên mượt hơn, dễ Underfitting</button>
+              <button type="button" data-qc-opt="1" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">B. Biên uốn lượn bao chặt từng điểm train, dễ Overfitting</button>
+              <button type="button" data-qc-opt="2" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">C. Tự chuyển thành siêu phẳng tuyến tính</button>
+            </div>
+            <div class="qc-explain hidden">$\gamma$ lớn thu hẹp bán kính ảnh hưởng của mỗi Support Vector thành các "đảo" bao sát từng điểm, còn $C$ lớn phạt nặng mọi lỗi trên tập train — cả hai đều đẩy độ phức tạp lên cao và dễ gây Overfitting.</div>
+            <div class="qc-feedback hidden mt-2.5 p-2.5 rounded-lg text-xs leading-relaxed"></div>
+          </div>
         `,
         exercises: [
           {
@@ -124,7 +138,7 @@ from sklearn.svm import SVC
 X = np.array([[1.0, 1.0], [3.0, 3.0], [4.0, 3.0]])
 y = np.array([-1, 1, 1])
 
-clf = SVC(kernel='linear', C=1e5)
+clf = SVC(kernel='linear', C=1e3)
 clf.fit(X, y)
 w = clf.coef_[0]
 b = clf.intercept_[0]

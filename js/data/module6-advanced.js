@@ -21,12 +21,13 @@ window.COURSE_MODULES.push(
             Giả sử dữ liệu sinh từ quy luật thực $y = f(x) + \epsilon$ với nhiễu $\mathbb{E}[\epsilon]=0, \text{Var}(\epsilon)=\sigma_\epsilon^2$. Kỳ vọng sai số dự đoán bình phương của mô hình $\hat{f}_{\mathcal{D}}(x)$ khi lấy trung bình trên các tập huấn luyện $\mathcal{D}$ phân rã thành 3 thành phần:
           </p>
           <div class="math-card bg-indigo-50/70 dark:bg-indigo-950/40 border border-indigo-200 dark:border-indigo-800/70">
-            $$\mathbb{E}_{\mathcal{D}}\Big[\big(y - \hat{f}_{\mathcal{D}}(x)\big)^2\Big] = \underbrace{\Big(\mathbb{E}_{\mathcal{D}}[\hat{f}_{\mathcal{D}}(x)] - f(x)\Big)^2}_{\text{Bias}^2 \text{ (Độ chệch bình phương)}} + \underbrace{\mathbb{E}_{\mathcal{D}}\Big[\big(\hat{f}_{\mathcal{D}}(x) - \mathbb{E}_{\mathcal{D}}[\hat{f}_{\mathcal{D}}(x)]\big)^2\Big]}_{\text{Variance (Phương sai)}} + \underbrace{\sigma_\epsilon^2}_{\text{Sai số tối thiểu}}$$
+            $$\mathbb{E}_{\mathcal{D}, \epsilon}\Big[\big(y - \hat{f}_{\mathcal{D}}(x)\big)^2\Big] = \underbrace{\Big(\mathbb{E}_{\mathcal{D}}[\hat{f}_{\mathcal{D}}(x)] - f(x)\Big)^2}_{\text{Bias}^2 \text{ (Độ chệch bình phương)}} + \underbrace{\mathbb{E}_{\mathcal{D}}\Big[\big(\hat{f}_{\mathcal{D}}(x) - \mathbb{E}_{\mathcal{D}}[\hat{f}_{\mathcal{D}}(x)]\big)^2\Big]}_{\text{Variance (Phương sai)}} + \underbrace{\sigma_\epsilon^2}_{\text{Sai số tối thiểu}}$$
           </div>
           <ul>
             <li><strong>High Bias — Underfitting (Chưa khớp):</strong> Mô hình quá đơn giản (ví dụ dùng đường thẳng bậc $1$ khớp hàm hình sin), dẫn đến cả <em>Train Error và Validation Error đều cao</em>. Khắc phục: tăng độ phức tạp mô hình, bổ sung đặc trưng phi tuyến, giảm hệ số điều chuẩn $\lambda$.</li>
             <li><strong>High Variance — Overfitting (Quá khớp):</strong> Mô hình quá phức tạp (đa thức bậc quá cao, mạng sâu không điều chuẩn trên ít dữ liệu), học thuộc lòng cả nhiễu nên <em>Train Error cực thấp nhưng Validation Error vọt rất cao</em>. Khắc phục: thu thập thêm dữ liệu, Regularization ($L_1, L_2$, Dropout), Early Stopping, dùng $K$-Fold Cross-Validation để chọn siêu tham số tại điểm cân bằng tối ưu.</li>
           </ul>
+          <div class="interactive-lab-mount my-6" data-interactive-lab="module-6"></div>
 
           <h3>2. Hệ thống Gợi ý (Recommender Systems)</h3>
           <ul>
@@ -53,6 +54,22 @@ window.COURSE_MODULES.push(
             <li><strong>Feature Extraction (Trích xuất đặc trưng):</strong> <em>Đóng băng (Freeze)</em> toàn bộ trọng số các tầng tích chập gốc $\theta_{\text{source}}$ (vốn đã học tốt cạnh, góc, hình khối tổng quát), chỉ huấn luyện tầng phân loại cuối $\phi$. Cực nhanh và an toàn khi tập dữ liệu đích rất nhỏ.</li>
             <li><strong>Fine-tuning (Tinh chỉnh):</strong> Mở khóa (<em>Unfreeze</em>) các tầng sâu phía cuối (hoặc toàn mạng) và cập nhật đồng thời với <strong>tốc độ học rất nhỏ</strong> ($\eta \approx 10^{-5} \div 10^{-4}$) để tinh chỉnh đặc trưng cấp cao thích ứng với miền dữ liệu chuyên biệt (ví dụ ảnh X-quang y tế) mà không phá hủy tri thức nền (<em>Catastrophic Forgetting</em>).</li>
           </ul>
+          <p class="mt-3 text-xs text-slate-500 dark:text-slate-400">
+            Mẹo thực tế: Nếu dữ liệu đích nhỏ nhưng <em>khác miền</em> so với ảnh tự nhiên (ví dụ ảnh vệ tinh, X-quang), có thể giữ nguyên vài tầng đầu trích xuất cạnh/vân và chỉ Fine-tune các khối sâu cuối cùng.
+          </p>
+          <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="0">
+            <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+              <span>⚡ Kiểm tra nhanh hiểu bài</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white !mb-2.5">Bạn có chỉ $250$ ảnh chó và mèo (rất giống miền dữ liệu ImageNet). Cách dùng Transfer Learning nào an toàn và ít bị Overfitting nhất?</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-qc-opt="0" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">A. Feature Extraction (đóng băng backbone, chỉ train classifier head)</button>
+              <button type="button" data-qc-opt="1" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">B. Mở khóa toàn bộ ResNet và train với $\eta = 0.05$</button>
+              <button type="button" data-qc-opt="2" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">C. Khởi tạo ngẫu nhiên toàn bộ mạng từ đầu</button>
+            </div>
+            <div class="qc-explain hidden">Với tập đích rất nhỏ ($250$ ảnh) và cùng miền với ImageNet, đóng băng các tầng trích xuất đặc trưng gốc tránh Overfitting và tránh làm hỏng trọng số tiền huấn luyện (Catastrophic Forgetting).</div>
+            <div class="qc-feedback hidden mt-2.5 p-2.5 rounded-lg text-xs leading-relaxed"></div>
+          </div>
         `,
         exercises: [
           {
@@ -94,7 +111,7 @@ for name, tr_err, val_err in models:
           {
             title: 'Bài tập 6.2: Dự đoán điểm đánh giá sản phẩm bằng User-based Collaborative Filtering',
             problemHtml: String.raw`
-              Cho vector đánh giá đã trừ trung bình (Centered Ratings) trên 4 sản phẩm của người dùng mục tiêu $U_1 = [2, -2, 1, \text{?}]$ và hai người dùng láng giềng $U_2 = [2, -1, 2, 1.5]$, $U_3 = [-2, 2, -1, -1.8]$. Tính độ tương đồng Cosine trên 3 sản phẩm chung và dự đoán điểm độ lệch tại sản phẩm thứ $4$ cho $U_1$.
+              Cho vector độ lệch đánh giá đã trừ trung bình người dùng (Centered Ratings, trích trên 4 sản phẩm đang xét trong một danh mục lớn hơn) của người dùng mục tiêu $U_1 = [2, -2, 1, \text{?}]$ và hai người dùng láng giềng $U_2 = [2, -1, 2, 1.5]$, $U_3 = [-2, 2, -1, -1.8]$. Tính độ tương đồng Cosine trên 3 sản phẩm chung và dự đoán điểm độ lệch tại sản phẩm thứ $4$ cho $U_1$.
             `,
             solutionHtml: String.raw`
               <p>Xét 3 sản phẩm đầu đã biết chung: $u_1 = [2, -2, 1]$, $\|u_1\|_2 = \sqrt{4+4+1} = 3$.</p>
@@ -102,7 +119,9 @@ for name, tr_err, val_err in models:
                 <li>Với $U_2$ ($u_2 = [2,-1,2], \|u_2\|_2 = 3$): $\text{sim}(U_1, U_2) = \frac{2(2) + (-2)(-1) + 1(2)}{3 \times 3} = \frac{8}{9} \approx +0.8889$ (rất tương đồng).</li>
                 <li>Với $U_3$ ($u_3 = [-2,2,-1], \|u_3\|_2 = 3$): $\text{sim}(U_1, U_3) = \frac{-4 - 4 - 1}{9} = -1.0$ (gu hoàn toàn trái ngược).</li>
               </ul>
-              <p>Nếu tổng hợp có trọng số tuyệt đối theo cả tương đồng âm/dương: $\hat{r}_{1,4} = \frac{0.8889 \times 1.5 + (-1.0) \times (-1.8)}{|0.8889| + |-1.0|} = \frac{1.3333 + 1.8}{1.8889} \approx +1.6588$ (hoặc nếu chỉ lọc láng giềng dương $s > 0$: $\hat{r}_{1,4} = +1.5$). Người dùng $U_1$ sẽ rất thích sản phẩm thứ 4!</p>
+              <p>Nếu tổng hợp có trọng số tuyệt đối theo cả tương đồng âm/dương:
+              $$\hat{r}_{1,4} = \frac{\frac{8}{9} \times 1.5 + (-1) \times (-1.8)}{\left|\frac{8}{9}\right| + |-1|} = \frac{\frac{4}{3} + 1.8}{\frac{17}{9}} = \frac{141}{85} \approx +1.6588$$
+              (Hoặc nếu chỉ lọc láng giềng cùng gu $s > 0$: $\hat{r}_{1,4} = +1.5$). Độ lệch dương cao cho thấy $U_1$ sẽ rất thích sản phẩm thứ 4!</p>
             `,
             verifyCode: String.raw`import numpy as np
 

@@ -56,6 +56,20 @@ window.COURSE_MODULES.push(
           <div class="math-card bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60">
             $$J(W) = \frac{|W^T S_B W|}{|W^T S_W W|} \implies S_W^{-1} S_B v = \lambda v \quad (\text{số chiều tối đa sau giảm là } \min(d, C - 1))$$
           </div>
+          <div class="interactive-lab-mount my-6" data-interactive-lab="module-5"></div>
+          <div class="theory-quick-check my-5 p-4 rounded-xl border border-emerald-500/25 bg-emerald-500/5 dark:bg-emerald-950/20" data-answer="1">
+            <div class="flex items-center gap-2 text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-1.5">
+              <span>⚡ Kiểm tra nhanh hiểu bài</span>
+            </div>
+            <p class="text-sm font-semibold text-slate-900 dark:text-white !mb-2.5">Một tập dữ liệu có $d = 20$ đặc trưng và $C = 4$ lớp phân loại. Khi dùng thuật toán LDA, ta có thể giảm xuống tối đa bao nhiêu chiều?</p>
+            <div class="flex flex-wrap gap-2">
+              <button type="button" data-qc-opt="0" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">A. Tối đa 4 chiều ($C$)</button>
+              <button type="button" data-qc-opt="1" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">B. Tối đa 3 chiều ($C - 1$)</button>
+              <button type="button" data-qc-opt="2" class="qc-opt-btn px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-surface-850 text-xs font-medium cursor-pointer transition">C. Tối đa 19 chiều ($d - 1$)</button>
+            </div>
+            <div class="qc-explain hidden">Hạng của ma trận phân tán giữa các lớp $S_B$ bị chặn trên bởi $C - 1$ vì $C$ vector tâm lớp chỉ sinh ra tối đa một không gian con $C - 1$ chiều; do đó LDA giữ được tối đa $\min(d, C - 1) = 3$ trục phân biệt.</div>
+            <div class="qc-feedback hidden mt-2.5 p-2.5 rounded-lg text-xs leading-relaxed"></div>
+          </div>
         `,
         exercises: [
           {
@@ -64,14 +78,24 @@ window.COURSE_MODULES.push(
               Cho 4 điểm dữ liệu 2D: $x_1=(1,1), x_2=(2,1), x_3=(5,4), x_4=(6,5)$. Khởi tạo $K=2$ tâm cụm ban đầu $\mu_1^{(0)}=(1,1)$ và $\mu_2^{(0)}=(2,1)$. Thực hiện 1 vòng lặp K-Means đầy đủ và tính WCSS sau cập nhật.
             `,
             solutionHtml: String.raw`
-              <p><strong>Bước 1 — Gán cụm theo khoảng cách Euclid tới $\mu_1^{(0)}(1,1)$ và $\mu_2^{(0)}(2,1)$:</strong></p>
+              <p><strong>Bước 1 — Gán cụm theo bình phương khoảng cách Euclid tới $\mu_1^{(0)}(1,1)$ và $\mu_2^{(0)}(2,1)$:</strong></p>
               <ul>
                 <li>$x_1(1,1)$: $d_1^2 = 0 < d_2^2 = 1 \implies$ Cụm 1.</li>
                 <li>$x_2(2,1)$: $d_1^2 = 1 > d_2^2 = 0 \implies$ Cụm 2.</li>
                 <li>$x_3(5,4)$: $d_1^2 = 25 > d_2^2 = 18 \implies$ Cụm 2.</li>
                 <li>$x_4(6,5)$: $d_1^2 = 41 > d_2^2 = 32 \implies$ Cụm 2.</li>
               </ul>
-              <p><strong>Bước 2 — Cập nhật tâm cụm:</strong> $\mu_1^{(1)} = (1, 1)$, $\mu_2^{(1)} = \frac{(2,1)+(5,4)+(6,5)}{3} = \left(\frac{13}{3}, \frac{10}{3}\right) \approx (4.33, 3.33)$. (Ở vòng kế tiếp $x_2(2,1)$ sẽ chuyển sang Cụm 1, hội tụ hoàn hảo về $\{x_1, x_2\}$ và $\{x_3, x_4\}$ với $\text{WCSS} = 1.5$!).</p>
+              <p><strong>Bước 2 — Cập nhật tâm cụm sau vòng lặp 1:</strong></p>
+              $$\mu_1^{(1)} = (1, 1), \qquad \mu_2^{(1)} = \frac{(2,1)+(5,4)+(6,5)}{3} = \left(\frac{13}{3}, \frac{10}{3}\right) \approx (4.33, 3.33)$$
+              <p><strong>Bước 3 — Tính $\text{WCSS}$ sau vòng lặp 1:</strong></p>
+              <ul>
+                <li>Cụm 1 $\{x_1(1,1)\}$ với $\mu_1^{(1)}=(1,1)$: $\text{SSE}_1 = 0$.</li>
+                <li>Cụm 2 $\{x_2(2,1), x_3(5,4), x_4(6,5)\}$ với $\mu_2^{(1)}=\left(\frac{13}{3}, \frac{10}{3}\right)$:
+                  $$\|x_2 - \mu_2^{(1)}\|_2^2 = \left(-\frac{7}{3}\right)^2 + \left(-\frac{7}{3}\right)^2 = \frac{98}{9}, \quad \|x_3 - \mu_2^{(1)}\|_2^2 = \frac{8}{9}, \quad \|x_4 - \mu_2^{(1)}\|_2^2 = \frac{50}{9}$$
+                </li>
+                <li>Tổng $\text{WCSS}^{(1)} = 0 + \frac{98 + 8 + 50}{9} = \frac{156}{9} = \frac{52}{3} \approx \mathbf{17.3333}$.</li>
+              </ul>
+              <p class="text-xs text-slate-500 dark:text-slate-400"><em>Mở rộng vòng lặp 2:</em> Ở vòng kế tiếp, $x_2(2,1)$ gần $\mu_1^{(1)}(1,1)$ ($d^2=1$) hơn $\mu_2^{(1)}$ ($d^2=\frac{98}{9}$), nên chuyển sang Cụm 1. Khi đó $\mu_1^{(2)}=(1.5, 1), \; \mu_2^{(2)}=(5.5, 4.5)$ và thuật toán hội tụ với $\text{WCSS}^{(2)} = 0.5 + 1.0 = \mathbf{1.5}$.</p>
             `,
             verifyCode: String.raw`import numpy as np
 
@@ -92,7 +116,7 @@ for it in range(1, 4):
             `,
             solutionHtml: String.raw`
               <p><strong>Phương trình đặc trưng:</strong> $\det(S - \lambda I) = (5-\lambda)(2-\lambda) - 4 = \lambda^2 - 7\lambda + 6 = 0 \implies \lambda_1 = 6, \; \lambda_2 = 1$.</p>
-              <p><strong>Vector riêng ứng với $\lambda_1 = 6$:</strong> $(S - 6I)v_1 = 0 \implies -v_{11} + 2v_{12} = 0 \implies v_1 = \frac{1}{\sqrt{5}}[2, 1]^T \approx [0.8944, 0.4472]^T$.</p>
+              <p><strong>Vector riêng đơn vị ứng với $\lambda_1 = 6$:</strong> $(S - 6I)v_1 = 0 \implies -v_{11} + 2v_{12} = 0 \implies v_1 = \pm\frac{1}{\sqrt{5}}[2, 1]^T \approx \pm[0.8944, 0.4472]^T$ (hai hướng ngược dấu $\pm v_1$ đều xác định cùng một trục thành phần chính).</p>
               <p><strong>Tỷ lệ phương sai giữ lại khi giảm xuống $k=1$ chiều:</strong> $\frac{\lambda_1}{\lambda_1 + \lambda_2} = \frac{6}{6 + 1} = \frac{6}{7} \approx 85.71\%$.</p>
             `,
             verifyCode: String.raw`import numpy as np
@@ -102,8 +126,13 @@ eigvals, eigvecs = np.linalg.eigh(S)
 idx = np.argsort(eigvals)[::-1]
 eigvals, eigvecs = eigvals[idx], eigvecs[:, idx]
 
+# Chuẩn hóa hướng dấu (vector riêng v1 và -v1 xác định cùng một trục chính)
+v1 = eigvecs[:, 0].copy()
+if v1[0] < 0:
+    v1 = -v1
+
 print("Các trị riêng (λ1, λ2):", eigvals)
-print("Thành phần chính thứ nhất v1:", np.round(eigvecs[:, 0], 4))
+print("Thành phần chính thứ nhất v1 (±):", np.round(v1, 4))
 print(f"Tỷ lệ phương sai giữ lại (k=1): {eigvals[0]/eigvals.sum()*100:.2f}%")`
           }
         ],
